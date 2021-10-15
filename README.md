@@ -46,12 +46,14 @@ Prepare the following folders
 
 This directory should be strucutured as follows:
 
-Program_files\
-    |\
-    |-- Users\
-    |-- Database\
-    |-- Dependencies\
-    |-- Paneles_Orphanet\
+<pre>
+Program_files
+    |
+    |-- Users
+    |-- Database
+    |-- Dependencies
+    |-- Paneles_Orphanet
+</pre>
 
 Subfolders explanation and content:
 
@@ -64,12 +66,12 @@ Subfolders explanation and content:
 2. Sample_files: should contain the variant files as they come out from the FJD-pipeline.
 
 It should have the following structure:
-
-Samples_files\
-   |\
-   |-- Samples\
-   |-- Diff\
-
+<pre>
+Samples_files
+   |
+   |-- Samples
+   |-- Diff
+</pre>
 - Samples: contains samples to analyse in pvm.txt format (see required files).
 - Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see required files).
 
