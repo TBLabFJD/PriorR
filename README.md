@@ -13,23 +13,23 @@ VariantCallingFJD source code is provided under the [**Creative Commons Attribut
 
 **Programming languages**
 
-**R v.3.6.1**
+- **R v.3.6.1**
 
 **R libraries:**
 
-**shiny_1.3.2** 
-**DT_0.9**
-**data.table_1.14.0**
-**dplyr_1.0.7**
-**shinyWidgets_0.4.9**
-**lazyeval_0.2.2**
-**shinydashboard_0.7.1**
-**shinydashboardPlus_0.7.0*
-**shinyalert_1.0**
-**filesstrings_3.1.5**
-**shinyBS_0.61**
-**shinyjs_1.0 **
-**optparse_1.6.4** 
+- shiny_1.3.2 
+- DT_0.9
+- data.table_1.14.0
+- dplyr_1.0.7
+- shinyWidgets_0.4.9
+- lazyeval_0.2.2
+- shinydashboard_0.7.1
+- shinydashboardPlus_0.7.0
+- shinyalert_1.0
+- filesstrings_3.1.5
+- shinyBS_0.61
+- shinyjs_1.0
+- optparse_1.6.4 
 
 
 # Installation
@@ -48,10 +48,10 @@ This directory should be strucutured as follows:
 
 Program_files
     |
-    |-- **Users**
-    |-- **Database**
-    |-- **Dependencies**
-    |-- **Paneles_Orphanet**
+    |-- Users
+    |-- Database
+    |-- Dependencies
+    |-- Paneles_Orphanet
 
 Subfolders explanation and content:
 
