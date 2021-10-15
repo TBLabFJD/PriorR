@@ -46,12 +46,12 @@ Prepare the following folders
 
 This directory should be strucutured as follows:
 
-Program_files
-    |
-    |-- Users
-    |-- Database
-    |-- Dependencies
-    |-- Paneles_Orphanet
+Program_files\
+    |\
+    |-- Users\
+    |-- Database\
+    |-- Dependencies\
+    |-- Paneles_Orphanet\
 
 Subfolders explanation and content:
 
@@ -65,10 +65,10 @@ Subfolders explanation and content:
 
 It should have the following structure:
 
-Samples_files
-   |
-   |-- Samples
-   |-- Diff
+Samples_files\
+   |\
+   |-- Samples\
+   |-- Diff\
 
 - Samples: contains samples to analyse in pvm.txt format (see required files).
 - Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see required files).
