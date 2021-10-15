@@ -55,10 +55,10 @@ Program_files
 
 Subfolders explanation and content:
 
--Users: this folder contains the user information about the session. Should be created but empty when the program is installed.
--Database: this folder contains the internal database of variants of interest as they are cataloghed by the analysts. Should contain an empty table with column names (See required files). 
--Dependencies: this folder contains the file that links genes to HPO files needed to find genes relevant for a disease (see required files).
--Orphanet panels: this folder contains all the Orphanet panels (see required files). 
+- Users: this folder contains the user information about the session. Should be created but empty when the program is installed.
+- Database: this folder contains the internal database of variants of interest as they are cataloghed by the analysts. Should contain an empty table with column names (See required files). 
+- Dependencies: this folder contains the file that links genes to HPO files needed to find genes relevant for a disease (see required files).
+- Orphanet panels: this folder contains all the Orphanet panels (see required files). 
 
 
 2. Sample_files: should contain the variant files as they come out from the FJD-pipeline.
@@ -70,8 +70,8 @@ Samples_files
    |-- Samples
    |-- Diff
 
--Samples: contains samples to analyse in pvm.txt format (see required files).
--Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see required files).
+- Samples: contains samples to analyse in pvm.txt format (see required files).
+- Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see required files).
 
 
 Windows system:
