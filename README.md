@@ -75,6 +75,7 @@ Samples_files
 - Samples: contains samples to analyse in pvm.txt format (see example).
 - Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see example).
 
+## Running
 
 **Windows system**:
 
