@@ -1,6 +1,6 @@
 # PriorR
 
-Priorr is prioritization program of disease-linked genetic variants devoloped within the Genetics&Genomics Department of the Fundacion Jimenez Diaz University Hospital. Priorr is conceived to analyse the output of the FJD-pipeline of SNVs or CNVs. This software program offers a number of useful functionalities for variant analysis such as: filtering by a virtual panel of genes. manual control of different population frequencies or pathogenicity predictors or filtering out variants that have been already found by another protocol.  
+Priorr is a prioritization program of disease-linked genetic variants devoloped within the Genetics&Genomics Department of La Fundacion Jimenez Diaz University Hospital. Priorr is conceived to analyse the output of the FJD-pipeline of SNVs or CNVs. This software program offers a number of useful functionalities for variant analysis such as: filtering by a virtual panel of genes. manual control of different population frequencies or pathogenicity predictors or filtering out variants that have been already found by another protocol.  
 
 # License
 
@@ -58,9 +58,9 @@ Program_files
 Subfolders explanation and content:
 
 - Users: this folder contains the user information about the session. Should be created but empty when the program is installed.
-- Database: this folder contains the internal database of variants of interest as they are cataloghed by the analysts. Should contain an empty table with column names (See required files). 
-- Dependencies: this folder contains the file that links genes to HPO files needed to find genes relevant for a disease (see required files).
-- Orphanet panels: this folder contains all the Orphanet panels (see required files). 
+- Database: this folder contains the internal database of variants of interest as they are cataloghed by the analysts. Should contain an empty table with column names (See example). 
+- Dependencies: this folder contains the file that links genes to HPO files needed to find genes relevant for a disease (see uploaded files).
+- Orphanet panels: this folder contains all the Orphanet panels (see uploaded files). 
 
 
 2. Sample_files: should contain the variant files as they come out from the FJD-pipeline.
@@ -72,8 +72,8 @@ Samples_files
    |-- Samples
    |-- Diff
 </pre>
-- Samples: contains samples to analyse in pvm.txt format (see required files).
-- Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see required files).
+- Samples: contains samples to analyse in pvm.txt format (see example).
+- Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see example).
 
 
 Windows system:
