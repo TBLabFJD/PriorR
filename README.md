@@ -76,18 +76,18 @@ Samples_files
 - Diff: contains diff files that indicate which variants are in the vcf commercial and which are not (see example).
 
 
-Windows system:
+**Windows system**:
 
-Create a bat file to launch Priorr from windows:
+Create a bat file to launch Priorr from windows (PRIORR.bat):
 
 Example:
 
 Rscript="C:\Program Files\R\R-3.6.1\bin\Rscript.exe" # Route to Rscript.exe
 %Rscript% \Route_to_Priorr\PRIORR2.3.R -p Route_to_program_files -s Route_to_Samples
 
-Linux system:
+**Linux system:**
 
-Launch the following line:
+Launch the following line in linux command line:
 
 Rscript  /Route_to_Priorr/PRIORR2.3.R -p Route_to_program_files -s Route_to_Samples
 
