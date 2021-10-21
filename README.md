@@ -36,9 +36,14 @@ VariantCallingFJD source code is provided under the [**Creative Commons Attribut
 
 Install dependencies
 
-Clone code of Priorr
+Clone code of Priorr using 
+```sh
+git clone https://github.com/TBLabFJD/PriorR.git
+```
 
 # Usage
+
+## Preparation
 
 Prepare the following folders
 
@@ -79,16 +84,24 @@ Samples_files
 
 **Windows system**:
 
-Create a bat file to launch Priorr from windows (PRIORR.bat):
+Create a bat file to launch Priorr from windows (PRIORR.bat) and save it in your desktop:
 
 Example:
-
+```sh
 Rscript="C:\Program Files\R\R-3.6.1\bin\Rscript.exe" # Route to Rscript.exe
 %Rscript% \Route_to_Priorr\PRIORR2.3.R -p Route_to_program_files -s Route_to_Samples
-
+```
 **Linux system:**
 
 Launch the following line in linux command line:
-
+```sh
 Rscript  /Route_to_Priorr/PRIORR2.3.R -p Route_to_program_files -s Route_to_Samples
+```
+## Intructions
+
+Execute PriorR. 
+
+Upload a variant file in format pvm.txt (see example) and modify the filters.
+
+
 
