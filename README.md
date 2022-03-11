@@ -5,10 +5,9 @@ Priorr is a prioritization program of disease-linked genetic variants devoloped 
 # Developers
 ## Main developers
  - Raquel Romero Fernández
- - Gonzalo Núñez Moreno
 
 ## Collaborators
- - Pablo Mínguez Paniagua
+ - Gonzalo Núñez Moreno
 
 
 # License
