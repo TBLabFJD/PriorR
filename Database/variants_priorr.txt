@@ -1,0 +1,5 @@
+CHROM	POS	REF	ALT	CLASSIFICATION	COMMENTS	USER
+chr10	71142251	G	A	Unknown	Demo1	Raquel.R
+chr3	57261955	A	G	Unknown	Test_bioinfo	
+chr1	54394098	A	G	Pathogenic	test demo	
+chr5	89979568	G	A	Benign	test curso	raquel
