@@ -1,0 +1,9 @@
+Homo_sapiens.GRCh28.75.dna.primary_assembly.fa
+dbNSFP4.3a_grch37.gz/dbNSFP4.3a_grch38.gz
+dbNSFP4.3_gene.complete.gz
+dbscSNV1.1_GRCh37.txt.gz/dbscSNV1.1_GRCh38.txt.gz
+gnomad.exomes.r2.1.1.sites.vcf.bgz
+LoFtool_scores.txt
+clinvar.vcf.gz
+mutscore-v1.0-hg19.tsv.gz
+

@@ -7,17 +7,21 @@ channels:
   - bioconda
 
 dependencies:
-  - conda-forge::r-base=3.6.3 
-  - conda-forge::shiny
-  - conda-forge::DT    #  for data tables
-  - conda-forge::dplyr
-  - conda-forge::shinyWidgets
-  - conda-forge::lazyeval
-  - conda-forge::shinydashboard
-  - conda-forge::shinydashboardPlus=0.7.5
-  - conda-forge::data.table
-  - conda-forge::shinyalert
-  - conda-forge::filesstrings
-  - conda-forge::shinyBS
-  - conda-forge::shinyjs
-  - conda-forge::optparse
+  - r-base=3.6.3
+  - r-shiny
+  - r-DT    #  for data tables
+  - r-dplyr
+  - r-shinyWidgets
+  - r-lazyeval
+  - r-shinydashboard
+  - r-shinydashboardPlus=0.7.5
+  - r-data.table
+  - r-shinyalert
+  - r-filesstrings
+  - r-shinyBS
+  - r-shinyjs
+  - r-optparse
+  - r-shinyFiles
+  - r-ggplot2
+  - pandas
+  - numpy
