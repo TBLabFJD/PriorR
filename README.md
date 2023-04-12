@@ -18,12 +18,8 @@ VariantCallingFJD source code is provided under the [**Creative Commons Attribut
 
 
 # Installation and execution
-<<<<<<< HEAD
+
 
 PriorR is available at dockerhub, instructions for installation and execution can be found in https://hub.docker.com/r/tblabfjd/priorr.
 
-=======
->>>>>>> 2b5d26503cfa0189c6c4f23ed8a6f39f6af8bf31
-
-PriorR is available at dockerhub, instructions for installation and execution can be found in https://hub.docker.com/r/tblabfjd/priorr.
 
