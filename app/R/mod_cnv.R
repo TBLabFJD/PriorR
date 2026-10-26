@@ -146,11 +146,7 @@ cnv_server <- function(id, user) {
     output$table <- DT::renderDT({
       DF <- filtered()
       shown <- DF[, display_columns(), drop = FALSE]
-      dt <- priorr_datatable(shown, ns("full_cell"))
-      if ("ACMG_class" %in% names(shown))
-        dt <- DT::formatStyle(dt, "ACMG_class", backgroundColor = DT::styleEqual(
-          c("1", "2", "3", "4", "5"), c("#c8e6c9", "#e6f4c8", "#fff3b0", "#fdcf94", "#f7a1a1")))
-      dt
+      priorr_datatable(shown, ns("full_cell"))   # the ACMG class as a colored label (table.R)
     }, server = TRUE)
     observeEvent(input$full_cell, show_full_cell(input$full_cell))
 
