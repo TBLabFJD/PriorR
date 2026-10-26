@@ -22,6 +22,9 @@ if (file.access(lib, 2) != 0) {
   dir.create(lib, recursive = TRUE, showWarnings = FALSE)
 }
 .libPaths(c(lib, .libPaths()))
+# The R processes that PriorR starts in the background (loading big files, PanelApp, GLOWgenes) must
+# find the same packages: they inherit R_LIBS
+Sys.setenv(R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep))
 
 missing <- packages[!vapply(packages, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing)) {
