@@ -33,6 +33,8 @@ auth_server <- function(id) {
         if (!is.null(message)) div(class = "text-danger", style = "margin-bottom: 10px;", message),
         actionButton(ns(if (first_run) "create_admin" else "login"), if (first_run) "Create and sign in" else "Sign in",
                      class = "btn-success", style = "width: 100%;"),
+        if (!first_run) div(class = "text-muted", style = "font-size: 11.5px; margin-top: 10px;",
+          "No user yet? An administrator creates it in 'Users and groups'. Forgotten password of the administrator: see Help > Users and groups."),
         div(style = "text-align: center; margin-top: 15px; font-size: 11px; color: #90a4ae;",
             tags$a(href = tblab_url, target = "_blank", style = "color: #90a4ae;",
                    tags$img(src = "tblab_logo.png", style = "width: 26px; vertical-align: middle; margin-right: 4px;"),

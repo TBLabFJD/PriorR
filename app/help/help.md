@@ -447,8 +447,18 @@ comments the others share with their groups.
 computer. *Sign out* makes the computer forget the user. When an administrator changes the
 password of a user, every computer forgets that user.
 
-From the command line (`app` folder): `Rscript Program_files/scripts/priorr_admin.R
-reset-password <user>` changes the password of a user (useful when the administrator forgets it).
+Only the first user is created on the sign in screen (the first time a shared folder is used); the
+next ones are created by an administrator in **Users and groups**.
+
+From the command line, in the `app` folder of PriorR (it asks for the password twice):
+
+```
+Rscript Program_files/scripts/priorr_admin.R reset-password <user>   # new password (e.g. the administrator forgot it)
+Rscript Program_files/scripts/priorr_admin.R create-admin <user>     # a new administrator
+```
+
+When PriorR uses its own `library/` add `R_LIBS=../library/<platform>` before `Rscript` (e.g.
+`R_LIBS=../library/x86_64-pc-linux-gnu-R4.6`).
 
 <h2 id="cnv">CNVs</h2>
 

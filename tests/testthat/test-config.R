@@ -63,3 +63,17 @@ test_that("folders of the lab configuration can be relative to the PriorR folder
   })
   priorr_home <<- old
 })
+
+test_that("the command line administration creates an administrator and changes passwords", {
+  shared <- tempfile("admin-shared-"); dir.create(shared)
+  run <- function(..., password) withr::with_dir(app_dir, withr::with_envvar(
+    c(PRIORR_SHARED_DIR = shared, PRIORR_ADMIN_PASSWORD = password, R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep)),
+    suppressWarnings(system2(file.path(R.home("bin"), "Rscript"), c("Program_files/scripts/priorr_admin.R", ...), stdout = TRUE, stderr = TRUE))))
+  expect_match(paste(run("create-admin", "maria", password = "primera123"), collapse = " "), "Administrator maria created")
+  expect_match(paste(run("reset-password", "MARIA", password = "segunda123"), collapse = " "), "Password of MARIA changed")
+  expect_match(paste(run("reset-password", "nadie", password = "x"), collapse = " "), "No user nadie")
+  old <- shared_dir; shared_dir <<- shared
+  expect_null(authenticate("maria", "primera123"))
+  expect_true(authenticate("maria", "segunda123")$is_admin)
+  shared_dir <<- old
+})

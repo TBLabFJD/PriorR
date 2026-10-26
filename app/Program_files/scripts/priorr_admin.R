@@ -15,6 +15,7 @@ action <- args[1]
 username <- args[2]
 
 read_password <- function() {
+  if (!interactive() && nzchar(Sys.getenv("PRIORR_ADMIN_PASSWORD"))) return(Sys.getenv("PRIORR_ADMIN_PASSWORD"))   # tests
   cat("Password: ")
   system("stty -echo", ignore.stderr = TRUE)
   on.exit(system("stty echo", ignore.stderr = TRUE))
@@ -23,20 +24,31 @@ read_password <- function() {
   password
 }
 
+# Users are in accounts.json of the shared folder (store.R); their id is the user name
 user_id <- function(username) {
-  id <- db_query("SELECT id FROM users WHERE username = ?", username)$id
-  if (length(id) != 1) stop("No user ", username)
-  id
+  a <- read_accounts()
+  i <- find_user(a, username)
+  if (is.na(i)) stop("No user ", username, " in ", shared_dir)
+  a$users[[i]]$username
+}
+
+read_new_password <- function() {
+  p1 <- read_password()
+  cat("Again: ")
+  p2 <- read_password()
+  if (!identical(p1, p2)) stop("The passwords are not the same")
+  p1
 }
 
 switch(action,
   "create-admin" = {
-    create_user(username, read_password(), is_admin = TRUE)
-    cat("Administrator", username, "created in", db_path, "\n")
+    create_user(username, read_new_password(), full_name = username, is_admin = TRUE)
+    cat("Administrator", username, "created in", shared_dir, "\n")
   },
   "reset-password" = {
-    set_password(user_id(username), read_password())
-    cat("Password of", username, "changed\n")
+    id <- user_id(username)            # the user first, then the password
+    set_password(id, read_new_password())
+    cat("Password of", username, "changed (in", shared_dir, ")\n")
   },
   "import-v3" = {
     path <- if (length(args) >= 3) args[3] else file.path(data_dir, "Database", "variants_priorr.txt")
