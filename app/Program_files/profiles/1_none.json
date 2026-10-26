@@ -1,0 +1,9 @@
+{
+  "name": "None",
+  "description": "No filters: every variant of the file",
+  "load": {"regions": [], "canonical_only": false, "max_af": {}, "min_cadd": null,
+           "exclude_clinvar_benign": false, "rescue_clinvar_pathogenic": false, "rescue_spliceai_min": null,
+           "panels": []},
+  "filters": {},
+  "columns": null
+}

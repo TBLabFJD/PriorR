@@ -1,0 +1,29 @@
+{
+  "name": "WGS",
+  "description": "Genome: only rare coding/splicing variants are loaded, plus ClinVar pathogenic and SpliceAI >= 0.5",
+  "load": {
+    "regions": [
+      "EXONIC",
+      "SPLICING"
+    ],
+    "canonical_only": false,
+    "max_af": {
+      "gnomADg_AF_popmax": 0.01,
+      "gnomADg_AF": 0.01,
+      "gnomADe_AF": 0.01,
+      "FJD_MAF_AF": null
+    },
+    "min_cadd": null,
+    "exclude_clinvar_benign": true,
+    "rescue_clinvar_pathogenic": true,
+    "rescue_spliceai_min": 0.5,
+    "panels": []
+  },
+  "filters": {
+    "max_gnomadg_af": 0.01,
+    "max_gnomadg_popmax": 0.01,
+    "max_gnomade_af": 0.01,
+    "exclude_benign": true
+  },
+  "columns": null
+}

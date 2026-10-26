@@ -1,0 +1,29 @@
+# PriorR configuration
+# ====================
+# Copy this file as "priorr.cfg" next to launch.R to configure PriorR for the whole lab, or
+# edit the "priorr.cfg" of each computer (PriorR shows where it is in Help > Configuration).
+# Lines starting with # are comments. Remove the # of the settings you want to use.
+
+# Shared folder of the lab, where PriorR keeps the users, groups, comments, profiles, saved
+# sessions and saved panels. Every computer must use the same folder.
+#   Windows:  shared_folder: \\servidor\genetica\priorr_datos     or   Z:\priorr_datos
+#   Linux:    shared_folder: /mnt/genetica/priorr_datos
+#   macOS:    shared_folder: /Volumes/genetica/priorr_datos
+#   Inside the PriorR folder (relative path): shared_folder: shared
+#   (then copying the PriorR folder copies the program and the data of the lab)
+# shared_folder: /mnt/genetica/priorr_datos
+
+# Folders shown first by "Open file" (Name=path, separated by ;)
+# data_folders: Genomes=/data/genomes; Exomes=/data/exomes
+
+# Local folder for the cache of big variant files (by default, the user's cache folder)
+# cache_folder: /data/priorr_cache
+
+# Memory and processors used to read big files (genomes)
+# memory_limit: 2GB
+# threads: 4
+# Safety limit of rows loaded from a file (memory): above it nothing is loaded
+# max_rows: 2000000
+
+# Genome build of the variant files, for the links to gnomAD, VarSome, UCSC... (GRCh38 or GRCh37)
+# genome_build: GRCh38

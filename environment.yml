@@ -1,0 +1,26 @@
+# Conda environment of PriorR (alternative to installing R + the packages with launch.R):
+#   conda env create -f environment.yml
+name: Priorr
+
+channels:
+  - conda-forge
+
+dependencies:
+  - r-base=4.4
+  - r-shiny
+  - r-dt
+  - r-dplyr
+  - r-data.table
+  - r-jsonlite
+  - r-ggplot2
+  - r-shinydashboard
+  - r-shinydashboardplus
+  - r-shinywidgets
+  - r-shinyalert
+  - r-shinyjs
+  - r-shinyfiles
+  - r-sodium
+  - r-dbi
+  - r-duckdb
+  - r-commonmark
+  - r-testthat
