@@ -31,6 +31,15 @@ phenotypes (HPO), regions and variants already found by another test of the same
 
 ## Installation (shared folder, each user runs it on their computer)
 
+**With the installers** (GitHub *Releases*, or *Actions > installers*): `PriorR-4.0-setup.exe` (Windows) and
+`PriorR-4.0.pkg` (macOS) are wizards that install PriorR for the user (no administrator needed), add a
+PriorR icon and, on Windows, ask for the shared folder of the lab. R must be installed (https://cran.r-project.org):
+the installers say so when it is missing. They are not signed: Windows shows "Windows protected your PC"
+(*More info > Run anyway*) and macOS needs right click > *Open* the first time. Built by
+`.github/workflows/installers.yml` from `installers/`.
+
+**Without installers:**
+
 1. Put this folder in a shared folder that every computer mounts (e.g. `\\server\genetica\PriorR`).
 2. Install **R 4.4 or newer** on each computer (https://cran.r-project.org).
 3. Start PriorR with **`PriorR.bat`** (Windows), **`PriorR.command`** (macOS) or **`priorr.sh`** (Linux).

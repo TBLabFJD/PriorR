@@ -1,0 +1,21 @@
+PriorR v4.0
+Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación Jiménez Díaz
+https://github.com/TBLabFJD/PriorR
+
+PriorR source code is provided under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International license (CC BY-NC-SA 4.0): https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+PriorR uses R and R packages provided under their own open source licenses.
+
+Data included with PriorR, under the licenses of their sources:
+- Gene panels of PanelApp (Genomics England) and PanelApp Australia.
+- RetiGene (Am J Hum Genet 2025;112(10):2253-2265), CC BY 4.0.
+- GLOWgenes rankings of PanelApp panels, disease-specific genes and SGDS: Benítez Y, Uría-Regojo G,
+  Mínguez P. A global survey of systems biology-based predictions of gene-rare disease associations
+  to enhance new diagnoses. Sci Rep 2026. doi:10.1038/s41598-026-54510-3. CC BY-NC-ND 4.0 (unmodified).
+- Human Phenotype Ontology (https://hpo.jax.org).
+- Gene constraint of gnomAD v4.1 (https://gnomad.broadinstitute.org).
+- Pathogenic missense variants of ClinVar (https://www.ncbi.nlm.nih.gov/clinvar).
+
+PriorR is a tool to help the analysis of genetic variants. The results must be reviewed by
+qualified professionals; PriorR is provided "as is", without warranty of any kind.

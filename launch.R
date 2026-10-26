@@ -12,8 +12,15 @@ packages <- c("shiny", "DT", "dplyr", "data.table", "jsonlite", "ggplot2", "shin
               "shinydashboardPlus", "shinyWidgets", "shinyalert", "shinyjs", "shinyFiles", "sodium",
               "DBI", "duckdb", "commonmark")
 
-lib <- file.path(priorr_home, "library", paste0(R.version$platform, "-R", getRversion()$major, ".", getRversion()$minor))
+platform <- paste0(R.version$platform, "-R", getRversion()$major, ".", getRversion()$minor)
+lib <- file.path(priorr_home, "library", platform)
 dir.create(lib, recursive = TRUE, showWarnings = FALSE)
+# PriorR installed where the user can't write (e.g. by an administrator): the packages go to the
+# folder of the user
+if (file.access(lib, 2) != 0) {
+  lib <- file.path(tools::R_user_dir("priorr", "data"), "library", platform)
+  dir.create(lib, recursive = TRUE, showWarnings = FALSE)
+}
 .libPaths(c(lib, .libPaths()))
 
 missing <- packages[!vapply(packages, requireNamespace, logical(1), quietly = TRUE)]

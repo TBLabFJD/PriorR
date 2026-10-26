@@ -31,7 +31,13 @@ The complete user guide with screenshots is in the **PriorR 4.0 user guide (PDF)
 
 <h2 id="installation">Installation</h2>
 
-**On each computer:**
+**With the installers** (`PriorR-4.0-setup.exe` for Windows, `PriorR-4.0.pkg` for macOS): wizards that
+install PriorR for the user (no administrator needed) and add a PriorR icon; the Windows one also asks
+for the shared folder of the lab. R must be installed first: the installers say so when it is missing.
+They are not signed: Windows shows "Windows protected your PC" (*More info > Run anyway*) and macOS needs
+right click > *Open* the first time.
+
+**Without installers, on each computer:**
 
 1. Install **R 4.4 or newer** from https://cran.r-project.org (Windows, macOS or Linux).
 2. Have a copy of the PriorR folder (it can be on the shared drive, so that everybody uses the same

@@ -3,3 +3,5 @@ app/shiny_bookmarks/
 shared/
 library/
 priorr.cfg
+installers/*/Output/
+installers/macos/build/
