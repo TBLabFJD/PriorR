@@ -1,27 +1,26 @@
-# You can use this file to create a conda environment for this pipeline:
+# Conda environment of PriorR (alternative to installing R + the packages with launch.R):
 #   conda env create -f environment.yml
 name: Priorr
 
 channels:
   - conda-forge
-  - bioconda
 
 dependencies:
-  - r-base=3.6.3
+  - r-base=4.4
   - r-shiny
-  - r-DT    #  for data tables
+  - r-dt
   - r-dplyr
-  - r-shinyWidgets
-  - r-lazyeval
-  - r-shinydashboard
-  - r-shinydashboardPlus=0.7.5
   - r-data.table
-  - r-shinyalert
-  - r-filesstrings
-  - r-shinyBS
-  - r-shinyjs
-  - r-optparse
-  - r-shinyFiles
+  - r-jsonlite
   - r-ggplot2
-  - pandas
-  - numpy
+  - r-shinydashboard
+  - r-shinydashboardplus
+  - r-shinywidgets
+  - r-shinyalert
+  - r-shinyjs
+  - r-shinyfiles
+  - r-sodium
+  - r-dbi
+  - r-duckdb
+  - r-commonmark
+  - r-testthat

@@ -1,0 +1,33 @@
+{
+  "name": "WES",
+  "description": "Exome / panels: rare coding and splicing variants, plus ClinVar pathogenic and SpliceAI >= 0.5",
+  "load": {
+    "regions": [
+      "EXONIC",
+      "SPLICING"
+    ],
+    "canonical_only": true,
+    "max_af": {
+      "gnomADg_AF_popmax": 0.01,
+      "gnomADg_AF": 0.01,
+      "gnomADe_AF": 0.01,
+      "FJD_MAF_AF": 0.01
+    },
+    "min_cadd": 15,
+    "exclude_clinvar_benign": true,
+    "rescue_clinvar_pathogenic": true,
+    "rescue_spliceai_min": 0.5,
+    "genes": [],
+    "panels": [],
+    "amber": false,
+    "excluded_panels": []
+  },
+  "filters": {
+    "max_gnomadg_af": 0.01,
+    "max_gnomadg_popmax": 0.01,
+    "max_gnomade_af": 0.01,
+    "max_fjd_af": 0.01,
+    "exclude_benign": true
+  },
+  "columns": null
+}

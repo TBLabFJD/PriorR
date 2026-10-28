@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PriorR 4.0 User Guide</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; }
+  h1 { font-size: 24pt; color: #1b5e20; margin: 0 0 4px 0; }
+  h2 { font-size: 15pt; color: #1b5e20; border-bottom: 2px solid #00a65a; padding-bottom: 3px; margin-top: 22px; page-break-after: avoid; }
+  h3 { font-size: 12pt; color: #2e7d32; margin: 14px 0 4px 0; page-break-after: avoid; }
+  p { margin: 5px 0; text-align: justify; }
+  ul, ol { margin: 4px 0 6px 0; padding-left: 20px; }
+  li { margin: 2px 0; }
+  code { font-family: "DejaVu Sans Mono", monospace; font-size: 9pt; background: #f1f3f4; padding: 0 3px; border-radius: 3px; }
+  pre { font-family: "DejaVu Sans Mono", monospace; font-size: 8.8pt; background: #f1f3f4; padding: 6px 9px; border-radius: 4px; white-space: pre-wrap; }
+  figure { margin: 10px 0 14px 0; text-align: center; page-break-inside: avoid; }
+  figure img { max-width: 100%; border: 1px solid #cfd8dc; border-radius: 4px; }
+  figcaption { font-size: 9pt; color: #546e7a; margin-top: 4px; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 6px 0; }
+  th, td { border: 1px solid #cfd8dc; padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: #e8f5e9; }
+  .cover { text-align: center; padding-top: 70mm; page-break-after: always; }
+  .cover img.logo { width: 330px; }
+  .cover .sub { font-size: 13pt; color: #455a64; margin-top: 14px; }
+  .cover .small { font-size: 10pt; color: #607d8b; margin-top: 50mm; }
+  .note { background: #fff8e1; border-left: 4px solid #f9a825; padding: 6px 10px; margin: 8px 0; font-size: 9.8pt; }
+  .new { background: #e8f5e9; border-left: 4px solid #00a65a; padding: 6px 10px; margin: 8px 0; }
+  .toc a { color: #1b5e20; text-decoration: none; }
+  .toc li { margin: 1px 0; }
+  .break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <img class="logo" src="img/logo_v4.png" alt="PriorR v4.0">
+  <h1 style="margin-top: 24px;">PriorR 4.0 User Guide</h1>
+  <div class="sub">Filtering and prioritization of disease-linked genetic variants</div>
+  <div class="small">
+    <img src="img/tblab_logo.png" style="width: 60px; vertical-align: middle;" alt="Bioinformatics Unit"><br>
+    Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación Jiménez Díaz<br>
+    https://www.translationalbioinformaticslab.es &middot; https://github.com/TBLabFJD/PriorR<br>
+    The screenshots use synthetic demo data (invented trio P001 / P002 / P003), not data of any person.
+  </div>
+</div>
+
+<h2>Contents</h2>
+<ol class="toc">
+  <li><a href="#intro">What is PriorR</a> &middot; <a href="#new">What is new in 4.0</a></li>
+  <li><a href="#install">Requirements and installation</a></li>
+  <li><a href="#config">Configuration of the lab and first start</a></li>
+  <li><a href="#input">Input files</a></li>
+  <li><a href="#gui">The interface</a></li>
+  <li><a href="#open">Opening a variant file and filtering profiles</a></li>
+  <li><a href="#filters">Sidebar filters: frequencies, pathogenicity and scores</a></li>
+  <li><a href="#panels">Genes, panels and phenotypes (HPO)</a></li>
+  <li><a href="#family">Inheritance, trios and de novo variants</a></li>
+  <li><a href="#prio">Prioritization</a></li>
+  <li><a href="#glow">GLOWgenes ranking</a></li>
+  <li><a href="#info">Variant information and ACMG criteria</a></li>
+  <li><a href="#classify">Classifications, comments and reanalysis</a></li>
+  <li><a href="#rounds">Analysis rounds</a></li>
+  <li><a href="#reads">Reads (BAM / CRAM)</a></li>
+  <li><a href="#cnv">CNVs</a></li>
+  <li><a href="#users">Users, groups and sessions</a></li>
+  <li><a href="#resources">Updating the resources</a></li>
+  <li><a href="#trouble">Troubleshooting</a> &middot; <a href="#cite">Citations</a></li>
+</ol>
+
+<h2 id="intro">1. What is PriorR</h2>
+<p>PriorR is a filtering and prioritization program of disease-linked genetic variants developed within
+the Bioinformatics Unit of the Genetics and Genomics Department, IIS-Fundación Jiménez Díaz. It opens
+variant tables already annotated (SNVs / indels of exomes, genomes or gene panels, and CNVs annotated
+with AnnotSV) and offers, in a graphical interface, the filters and functions used in the daily analysis:
+population frequencies, pathogenicity predictors, virtual gene panels, phenotypes (HPO), inheritance
+patterns and trios, prioritization of variants and genes (GLOWgenes), ACMG criteria, comments and
+classifications shared by the lab, and the reads of each variant.</p>
+
+<div class="new" id="new"><b>What is new in PriorR 4.0</b>
+<ul>
+  <li>Runs on each user's computer (Windows, macOS, Linux) with the data of the lab in a shared folder; no
+      Docker or server needed. Users, groups, comments and classifications shared by the whole lab.</li>
+  <li>The same <i>Open variant file</i> for exomes, genomes and panels, with <b>filtering profiles</b> (None, WES, WGS
+      and the ones saved by the users). Genomes are prefiltered on disk (DuckDB) and load in seconds.</li>
+  <li><b>Panel library</b>: PanelApp England and Australia, RetiGene, Orphanet, disease-specific genes of GLOWgenes
+      (Benítez et al. 2026), the lab's panels and HPO terms working as a panel.</li>
+  <li><b>GLOWgenes ranking</b> view (precomputed rankings or new rankings run with Docker) and the SGDS specificity score.</li>
+  <li><b>Trios</b> and de novo variants; <b>ACMG</b> criteria suggested from the annotation; <b>reanalysis</b> alerts;
+      <b>analysis rounds</b>; filters for every score of the file; AlphaMissense and gnomAD gene constraint.</li>
+  <li>Variant information redesigned, external links, <b>reads viewer</b> (igv.js) for SNVs and CNVs, in-app Help.</li>
+</ul>
+The VCF annotation module of PriorR 3 was removed: the files are annotated by the lab pipeline before PriorR.</div>
+
+<h2 id="install">2. Requirements and installation</h2>
+<ul>
+  <li><b>Operating system:</b> Windows, macOS or Linux, 64 bit. <b>Memory:</b> 8 GB (16 GB or more for genomes).</li>
+  <li><b>R</b> 4.3 or newer (https://cran.r-project.org). The first start needs internet to install the R packages
+      (into the <code>library/</code> folder of PriorR, nothing is installed in the system).</li>
+  <li><b>Docker</b> only to run new GLOWgenes rankings (optional).</li>
+</ul>
+<p><b>Installers:</b> <code>PriorR-4.0-setup.exe</code> (Windows) and <code>PriorR-4.0.pkg</code> (macOS) are wizards that install
+PriorR for the user (no administrator needed) and add a PriorR icon; the Windows one asks for the shared folder of the lab.
+R must be installed first (the installers say so when it is missing). They are not signed: Windows shows "Windows protected
+your PC" (<i>More info &gt; Run anyway</i>) and macOS needs right click &gt; <i>Open</i> the first time.</p>
+<p><b>Without installers:</b> copy the PriorR folder to a place every computer can reach (a network folder) or to each computer, and start it with:</p>
+<table>
+  <tr><th>System</th><th>How to start PriorR</th></tr>
+  <tr><td>Windows</td><td>double click <code>PriorR.bat</code></td></tr>
+  <tr><td>macOS</td><td>double click <code>PriorR.command</code></td></tr>
+  <tr><td>Linux</td><td><code>./priorr.sh</code></td></tr>
+</table>
+<p>PriorR opens in the web browser (a random local port); closing the console window stops it. It can also run as a
+server (Dockerfile in the repository) for labs that prefer one shared installation.</p>
+
+<h2 id="config">3. Configuration of the lab and first start</h2>
+<p>The lab data (users, groups, comments, classifications, profiles, saved panels, analysis rounds, GLOWgenes
+rankings) live in a <b>shared folder</b>. It is set in <code>priorr.cfg</code> next to <code>launch.R</code>
+(configuration of the lab; commented example in <code>priorr.cfg.example</code>) or, for one computer, in the
+configuration of that computer. When nothing says where the shared folder is, the first start shows a short
+setup wizard that asks for it.</p>
+<pre>shared_folder: //server/genetics/priorr
+data_folders: Exomes=//server/exomes; Genomes=//server/genomes
+genome_build: GRCh38
+memory_limit: 8GB
+threads: 4
+max_rows: 2000000</pre>
+<p>The first time a shared folder is used, PriorR asks for the first administrator (fig. 1). Afterwards each user
+signs in once per computer (<i>Remember me</i>).</p>
+<figure><img src="img/01_first_admin.png" style="width: 78%;"><figcaption>Figure 1. First start with a new shared folder: creation of the first administrator.</figcaption></figure>
+
+<h2 id="input">4. Input files</h2>
+<ul>
+  <li><b>SNVs / indels:</b> tab-separated table annotated by the lab pipeline (VEP and others): <code>CHROM POS REF ALT</code>,
+      <code>SYMBOL</code>, <code>Consequence</code>, frequencies (<code>gnomADg_AF</code>, <code>gnomADg_AF_popmax</code>...),
+      <code>CLNSIG</code>, predictors (<code>CADD_PHRED</code>, <code>REVELScore</code>, <code>SpliceAI_DS_Max</code>...) and,
+      for each sample, <code>&lt;sample&gt;_GT</code>, <code>_DP</code>, <code>_AD</code>, <code>_VAF</code>. Plain or <code>.gz</code>;
+      genomes of several GB are fine. Filters only apply to the columns the file has.</li>
+  <li><b>CNVs:</b> AnnotSV tables (<code>.tsv</code>).</li>
+  <li><b>Optional:</b> PED file of the family, BED of regions, VCF of another test of the same patient, gene lists,
+      BAM / CRAM files with their index.</li>
+</ul>
+<p>Demo data: <code>app/Program_files/examples/demo_trio_synthetic.tsv</code> and <code>demo_cnv_synthetic.tsv</code>
+(synthetic, made by <code>scripts/make_demo_data.R</code>).</p>
+
+<h2 id="gui" class="break">5. The interface</h2>
+<p>The header shows the user (password and sign out). The tabs are <b>SNV</b>, <b>CNV</b>, <b>Users and groups</b>
+(administrators) and <b>Help</b>. On the left, the sidebar with the filters and functions of the tab; in the centre,
+the table, the variant information, the reads and the saved sessions (fig. 3).</p>
+<figure><img src="img/03_main_snv.png"><figcaption>Figure 2. Main interface (SNVs) after loading the demo trio with the WES profile.</figcaption></figure>
+<p>Above the table: the three <b>views</b> (<i>Sidebar filters</i>, <i>PriorR priority</i> and <i>GLOWgenes ranking</i>, the one in use in green) and
+how many rows are loaded and shown. Column headers show <code>SYMBOL</code> as GENE and no underscores; each column has
+its own search box; long values are shown in full on hover or click. <i>Save data</i> downloads the filtered table.</p>
+
+<h2 id="open">6. Opening a variant file and filtering profiles</h2>
+<p><b>Load variants &gt; Open variant file</b> opens the dialog of fig. 3: choose the file (from the folders of the lab; every file of
+the folder is listed and a file that is not a variant table gives a message),
+a <b>filtering profile</b> and, if wanted, genes or panels. The <b>load filters</b> decide what is read from the file
+(essential for genomes); the sidebar filters work afterwards on the loaded variants.</p>
+<figure><img src="img/02_open_file.png"><figcaption>Figure 3. Opening a file with the WES profile: load filters, panels and profile management.</figcaption></figure>
+<ul>
+  <li><b>None:</b> every variant. <b>WES:</b> rare coding / splicing variants, plus ClinVar pathogenic and SpliceAI ≥ 0.5.
+      <b>WGS:</b> the same idea for genomes.</li>
+  <li>A profile keeps load filters, sidebar filters and columns. Save the current ones as a profile of your own, upload or
+      download profiles (<code>.json</code>); built-in profiles are in <code>app/Program_files/profiles</code>.</li>
+  <li>Variants rescued by a load rule (ClinVar pathogenic, SpliceAI) can be hidden later by the sidebar filters of the same
+      profile: the line above the table shows loaded vs shown rows.</li>
+</ul>
+
+<h2 id="filters">7. Sidebar filters: frequencies, pathogenicity and scores</h2>
+<ul>
+  <li><b>Columns:</b> columns shown (hiding columns never changes the result).</li>
+  <li><b>Filters:</b> variant type, consequence, genomic region, canonical transcripts, predicted transcripts (XM_ / XR_), BED regions.</li>
+  <li><b>Frequencies:</b> maximum gnomAD genomes / popmax / exomes and lab frequency. A missing frequency never removes a variant.</li>
+  <li><b>Pathogenicity</b> (fig. 4): minimum CADD and a filter for each score the file has (REVEL, AlphaMissense, MutScore,
+      SpliceAI, dbscSNV ADA / RF, number of pathogenic predictors, DOMINO, phyloP, gene LOEUF). <i>All must pass</i>
+      (a missing score passes) or <i>at least one must pass</i> (e.g. REVEL ≥ 0.5 <b>or</b> SpliceAI ≥ 0.2). Exclude ClinVar benign.</li>
+</ul>
+<figure><img src="img/04_pathogenicity.png"><figcaption>Figure 4. Pathogenicity: only the scores present in the loaded file are offered.</figcaption></figure>
+<div class="note"><b>Annotations added by PriorR</b> only when the file doesn't have them: AlphaMissense score and class of missense
+SNVs (from a file prepared once by the administrator, see section 18) and the gnomAD v4.1 gene constraint
+(LOEUF, pLI, missense Z). The SGDS column (gene-disease specificity, GLOWgenes) is also added.</div>
+
+<h2 id="panels" class="break">8. Genes, panels and phenotypes (HPO)</h2>
+<p><b>Genes and panels</b> (fig. 5) keeps the variants of your genes and of the chosen panels:</p>
+<ul>
+  <li><b>Gene panels:</b> PanelApp England and Australia (green genes; amber, or amber and red, optionally), RetiGene (inherited retinal
+      diseases), Orphanet and the panels saved by the lab (upload a gene list and save it with a name).</li>
+  <li><b>Disease-specific genes (Benítez et al., 2026):</b> genes predicted by GLOWgenes as specific of one disease or of a
+      disease class, in their own list.</li>
+  <li><b>Exclude</b> the genes of other panels or of a file.</li>
+  <li><b>Download the latest PanelApp (only for me):</b> each user can download the current PanelApp for themselves; the others
+      keep the lab copy.</li>
+</ul>
+<figure><img src="img/05_genes_panels.png"><figcaption>Figure 5. Variants of the RetiGene RP panel.</figcaption></figure>
+<p><b>Phenotypes / HPO</b> (fig. 6): choose HPO terms by name or identifier, or paste a list of identifiers
+(<code>HP:0000510, HP:0000556</code>). The genes of each term <b>and of its subterms</b> work like one more panel.</p>
+<figure><img src="img/06_hpo.png"><figcaption>Figure 6. HPO terms as a panel (Rod-cone dystrophy, Retinal dystrophy).</figcaption></figure>
+
+<h2 id="family" class="break">9. Inheritance, trios and de novo variants</h2>
+<p>In <b>Family / ROH</b> choose the family: a <b>trio</b> among the samples of the file (proband, sex, father and mother)
+or a <b>PED file</b>. Then choose the pattern in <b>Inheritance</b> (fig. 7):</p>
+<ul>
+  <li><b>De novo:</b> proband heterozygous (VAF 0.2-0.8) and both parents homozygous reference with depth ≥ 10 and at most
+      one read with the variant. Chromosome X in a male proband: only the mother; Y: only the father. A parent without a call
+      never gives a de novo.</li>
+  <li><b>Dominant</b>, <b>Recessive-Homozygous</b>, <b>Recessive-Compound heterozygous</b> (one variant from each parent when both
+      are available) and <b>X-linked</b>, with the OMIM inheritance of the gene.</li>
+  <li>Without a family the genotype of the sample is used. <b>ROH:</b> colors the variants in runs of homozygosity.</li>
+</ul>
+<figure><img src="img/07_trio_denovo.png"><figcaption>Figure 7. Trio of the demo data and the de novo candidates.</figcaption></figure>
+
+<h2 id="prio">10. Prioritization</h2>
+<p>Above the table, the <b>PriorR priority</b> button shows the variants of the sidebar filters with the red ones at the top,
+then the orange ones, then the rest. In the <i>Sidebar filters</i> view, <i>Color red / orange</i> colors them without changing the order.</p>
+<p>A box above the table says how many red and orange variants there are and what they mean:</p>
+<ul>
+  <li><b>Red</b> (never when ClinVar says benign, likely benign or uncertain significance): ClinVar pathogenic / likely pathogenic;
+      rare (gnomAD genomes popmax &lt; 0.001 or absent) with &gt; 60% pathogenic predictors and CADD &gt; 25 and / or MutScore &gt; 0.8;
+      rare start / stop lost, stop gained, frameshift or in-frame indel with &gt; 75% pathogenic predictors (without CADD / MutScore);
+      rare splicing or intronic variant with dbscSNV ADA or RF &gt; 0.8.</li>
+  <li><b>Orange:</b> low frequency (0.001-0.01) with &gt; 60% pathogenic predictors and CADD &gt; 25 or MutScore &gt; 0.8; the same for
+      splicing / intronic variants with ADA or RF &gt; 0.8; other pathogenic ClinVar annotations (low penetrance, risk factor), not
+      conflicting; rare ClinVar uncertain significance with &gt; 60% pathogenic predictors and CADD &gt; 25 or MutScore &gt; 0.8.</li>
+</ul>
+
+<h2 id="glow">11. GLOWgenes ranking</h2>
+<p>The <b>GLOWgenes ranking</b> button above the table shows only candidate variants (rare, not benign and with at least one
+evidence of pathogenicity) ordered by the GLOWgenes rank of their gene: 0 are the genes of the disease panel and then the
+closest genes in the GLOWgenes networks (fig. 8). <b>Hide panel genes</b> keeps only the new candidates. In the sidebar,
+<i>Rank the genes with</i>:</p>
+<ul>
+  <li>the <code>GLOWgenes</code> column of the file;</li>
+  <li><b>precomputed rankings:</b> Orphanet panels, 209 PanelApp panels (Benítez et al., Sci Rep 2026) and the rankings computed by the lab;</li>
+  <li><b>a new ranking:</b> a panel (10 or more genes) or a gene file is run with GLOWgenes in Docker (image <code>tblabfjd/glowgenes</code>,
+      about 15 minutes); the result is shared with the lab.</li>
+</ul>
+<p><i>Only genes up to a GLOWgenes rank</i> limits the rank in both views.</p>
+<figure><img src="img/11_glowgenes.png"><figcaption>Figure 8. GLOWgenes view with the PanelApp Retinal disorders ranking.</figcaption></figure>
+
+<h2 id="info" class="break">12. Variant information and ACMG criteria</h2>
+<p>Selecting a row shows (fig. 9): gene, position, impact and ClinVar badges; transcript and HGVS; genotypes of each sample
+(GT, DP, AD, VAF and variant callers); read depth compared with the whole file; population frequencies; predictors and scores
+(with AlphaMissense and the gene constraint); OMIM; external links (GeneCards, STRING, OMIM, ClinVar, gnomAD, PanelApp, DECIPHER,
+GTEx, UniProt, VarSome, SpliceAI Lookup, UCSC...); ACMG criteria and comments.</p>
+<figure><img src="img/08_variant_info.png"><figcaption>Figure 9. Variant information of a stop variant of CNGB3 in the demo trio.</figcaption></figure>
+<p>The <b>ACMG (suggested)</b> card (fig. 10) lists the criteria that the annotation supports (ACMG/AMP 2015 with the ClinGen SVI
+recommendations) with their points and class (Tavtigian et al. 2020): PVS1 (null variant), PM2_Supporting (absent or very rare),
+PM4, PP3 / BP4 (REVEL thresholds of Pejaver et al. 2022, CADD without REVEL, SpliceAI), BP7, BA1 / BS1 and PM6 (de novo in the
+trio), PS1 / PM5 (same amino acid change / another missense at the same residue pathogenic in ClinVar, same transcript). They are
+suggestions: segregation, functional data, phenotype or <i>in trans</i> are added by the analyst.</p>
+<figure><img src="img/09_acmg_card.png"><figcaption>Figure 10. Predictors, gene constraint and the ACMG criteria suggested from the annotation.</figcaption></figure>
+
+<h2 id="classify" class="break">13. Classifications, comments and reanalysis</h2>
+<p><b>Add comment / classification</b> (fig. 11): classification (Benign ... Pathogenic), ACMG criteria (the suggested ones come
+chosen: remove, change or add, and the points and class are recalculated), comment and who sees it: <i>all my groups</i>, one
+group or only me. Classifications belong to the variant (chromosome, position, alleles), so they are seen in every file
+that has it. <b>Classification &gt; Show classifications and comments</b> adds them to the table.</p>
+<figure><img src="img/10_classify.png"><figcaption>Figure 11. Classifying a variant with its ACMG criteria.</figcaption></figure>
+<p><b>Reanalysis.</b> When a variant is classified, PriorR saves what the annotation said (ClinVar, gnomAD popmax, green PanelApp panels
+of the gene, ACMG suggestion). When a newer annotation of the patient is opened, a box lists the classified variants that changed
+(fig. 12); <i>Only classified variants with changes</i> shows only them.</p>
+<figure><img src="img/13_reanalysis.png"><figcaption>Figure 12. Reanalysis: the ClinVar classification of a classified variant changed.</figcaption></figure>
+
+<h2 id="rounds" class="break">14. Analysis rounds</h2>
+<p>To analyze a genome in steps without reviewing the same variants again: in <b>Analysis rounds</b>, <i>Save a round with the
+current panels, frequency and CADD</i>. A round keeps the variants of the current gene panels / HPO / genes, maximum
+frequency and minimum CADD (the other filters are not used) and its default name says so (e.g.
+<code>P001 · RetiGene - RP (v2025) · AF ≤ 0.01 · CADD ≥ 20</code>). With new filters, tick <b>Hide the variants of previous
+rounds</b> to see only new variants (fig. 13). Rounds are saved per user and file and can be deleted.</p>
+<figure><img src="img/12_rounds.png"><figcaption>Figure 13. A saved round and its variants hidden in the next analysis.</figcaption></figure>
+
+<h2 id="reads">15. Reads (BAM / CRAM)</h2>
+<p>The <b>Reads (IGV)</b> box shows the reads of the selected variant with igv.js: <i>Open BAM / CRAM files</i> (with their
+index next to them: <code>X.bam.bai</code>, <code>X.bai</code>, <code>.csi</code>, <code>.crai</code>, also in capitals; each file is assigned to the sample whose name it contains). The files are read
+from the computer; the reference genome comes from the IGV servers. <i>Open in IGV desktop</i> sends the files and the position to IGV
+(port 60151 enabled). In CNVs, small CNVs are shown whole and big ones by their two breakpoints.</p>
+
+<h2 id="cnv" class="break">16. CNVs</h2>
+<p>The <b>CNV</b> tab opens AnnotSV files (fig. 14). Filters: samples, annotation mode (<i>full</i>: one row per CNV; <i>split</i>:
+one per gene), type, location, minimum ACMG class, number of programs, genes, panels, disease-specific genes, HPO and frequency of
+benign gains / losses. <b>GLOWgenes ranking</b> gives each CNV the best rank of its genes (<code>GLOW_rank</code>), to order or limit.
+The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 15).</p>
+<figure><img src="img/14_cnv.png"><figcaption>Figure 14. CNVs of the demo ordered by the GLOWgenes rank of their genes.</figcaption></figure>
+<figure><img src="img/15_cnv_info.png"><figcaption>Figure 15. CNV information.</figcaption></figure>
+
+<h2 id="users" class="break">17. Users, groups and sessions</h2>
+<p><b>Users and groups</b> (administrators, fig. 16): create users, change passwords, deactivate users, make administrators,
+create groups and assign members. Members of a group see the comments shared with their groups. From the command line,
+<code>Rscript Program_files/scripts/priorr_admin.R reset-password &lt;user&gt;</code> resets a password.
+<b>Saved sessions</b> keeps an analysis (file, profile, filters, columns, BAM files) to open it again later, also from another computer.</p>
+<figure><img src="img/17_users.png"><figcaption>Figure 16. Users and groups.</figcaption></figure>
+<p>The <b>Help</b> tab (fig. 17) has the complete documentation and the configuration of the computer.</p>
+<figure><img src="img/16_help.png"><figcaption>Figure 17. In-app Help.</figcaption></figure>
+
+<h2 id="resources">18. Updating the resources</h2>
+<p>From the <code>app/</code> folder (they need internet):</p>
+<table>
+  <tr><th>Resource</th><th>Command</th></tr>
+  <tr><td>PanelApp (lab copy)</td><td><code>Rscript Program_files/scripts/update_panels.R</code></td></tr>
+  <tr><td>HPO</td><td><code>Rscript Program_files/scripts/update_hpo.R</code></td></tr>
+  <tr><td>gnomAD gene constraint</td><td><code>Rscript Program_files/scripts/update_constraint.R</code></td></tr>
+  <tr><td>AlphaMissense (once, ~640 MB)</td><td><code>Rscript Program_files/scripts/get_alphamissense.R</code></td></tr>
+  <tr><td>ClinVar missense (PS1 / PM5)</td><td><code>Rscript Program_files/scripts/update_clinvar_missense.R</code></td></tr>
+  <tr><td>RetiGene</td><td><code>Rscript Program_files/scripts/import_retigene.R</code></td></tr>
+</table>
+<p>Other files the lab can adapt: <code>Program_files/profiles/*.json</code> (built-in profiles), <code>links.tsv</code> (external
+links), <code>glowgenes.json</code> (filters of the GLOWgenes view).</p>
+
+<h2 id="trouble">19. Troubleshooting</h2>
+<ul>
+  <li><b>The first load of a genome is slow:</b> it prepares a cache; the next loads take seconds.</li>
+  <li><b>I don't see the comments of a colleague:</b> check that you share a group and that the comment is not private.</li>
+  <li><b>Each computer sees different users:</b> they don't use the same shared folder (see Help &gt; configuration).</li>
+  <li><b>The reads don't show:</b> index next to the BAM / CRAM, internet for the reference, <code>genome_build</code> of the files.</li>
+  <li><b>A BAM doesn't appear in the dialog:</b> check that the <code>.bam</code> is really in the folder (sometimes only the <code>.bai</code> / <code>.md5</code> were copied).</li>
+  <li><b>"Permission denied" in a network folder:</b> folders mounted with sshfs only let in the processes of the user who mounted them; start PriorR from that user's session.</li>
+  <li><b>Run GLOWgenes says Docker is not available:</b> install Docker, start it and (Linux) add the user to the <code>docker</code> group.</li>
+</ul>
+
+<h2 id="cite">20. Citations</h2>
+<ul>
+  <li>GLOWgenes: de la Fuente L, Del Pozo-Valero M, Perea-Romero I, Blanco-Kelly F, Fernández-Caballero L, Cortón M, Ayuso C,
+      Mínguez P. Prioritization of new candidate genes for rare genetic diseases by a disease-aware evaluation of heterogeneous
+      molecular networks. Int J Mol Sci 2023;24(2):1661.</li>
+  <li>GLOWgenes rankings of PanelApp panels, disease-specific genes and SGDS: Benítez Y, Uría-Regojo G, Mínguez P. A global survey of systems biology-based predictions of gene-rare disease associations to enhance new diagnoses. Sci Rep 2026. doi:10.1038/s41598-026-54510-3.</li>
+  <li>RetiGene: Am J Hum Genet 2025;112(10):2253-2265. PanelApp (Genomics England, Australia). Human Phenotype Ontology.</li>
+  <li>AlphaMissense: Cheng J et al. Science 2023. ClinVar: Landrum MJ et al. Nucleic Acids Res 2018. gnomAD v4.1. ACMG/AMP: Richards S et al. Genet Med 2015; Tavtigian SV et al.
+      Hum Mutat 2020; Pejaver V et al. Am J Hum Genet 2022; Walker LC et al. Am J Hum Genet 2023.</li>
+  <li>PriorR is developed by the Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación Jiménez Díaz:
+      https://www.translationalbioinformaticslab.es &middot; https://github.com/TBLabFJD/PriorR</li>
+</ul>
+</body>
+</html>

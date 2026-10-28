@@ -1,0 +1,15 @@
+{
+  "description": "Filters of the GLOWgenes ranking view: rare variants with at least one evidence of pathogenicity",
+  "max_af": {"gnomADg_AF_popmax": 0.01, "gnomADg_AF": 0.01, "gnomADe_AF": 0.01},
+  "exclude_clinvar_benign": true,
+  "evidence": {
+    "clinvar_pathogenic": true,
+    "high_impact": true,
+    "min_cadd": 20,
+    "min_revel": 0.5,
+    "min_spliceai": 0.2,
+    "priorr_priority": true
+  },
+  "one_row_per_variant": true,
+  "max_rank": null
+}

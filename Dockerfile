@@ -1,65 +1,26 @@
-## Define base image where to build our image
-FROM condaforge/mambaforge:4.12.0-2
+FROM condaforge/miniforge3:24.9.2-0
 
-## Documentation of the image
-LABEL authors="Raquel Romero" \
-      description="PriorR"
+LABEL authors="Raquel Romero, Pablo Minguez" \
+      description="PriorR v4.0"
 
-# Install mamba to manage conda (recommended when installing a high number of dependencies)
-#RUN conda install mamba -c conda-forge
-
-# Install the conda environment
 COPY environment.yml /
-RUN mamba env create -f /environment.yml && conda clean -a
+RUN conda env create -f /environment.yml && conda clean -a -y
+ENV PATH=/opt/conda/envs/Priorr/bin:$PATH
 
-# Add conda installation dir to PATH (instead of doing 'conda activate')
-ENV PATH /opt/conda/envs/Priorr/bin:$PATH
+COPY app/ /srv/priorr/app/
+COPY tests/ /srv/priorr/tests/
+WORKDIR /srv/priorr
 
-
-# Dump the details of the installed packages to a file for posterity
-RUN conda env export --name minimal_docker > minimal_docker.yml
-
-
-RUN apt-get update && apt-get install -y \
-gcc \
-g++ \
-make \
-perl \
-cpanminus \
-libmysqlclient-dev \
-unzip \
-libbz2-dev \
-liblzma-dev \
-bcftools \
-tabix \
-bzip2 \
-bedtools
-
-RUN cpanm Archive::Zip DBD::mysql LWP::Simple
-
-
-RUN wget https://github.com/Ensembl/ensembl-vep/archive/release/105.zip && unzip 105.zip
-WORKDIR ensembl-vep-release-105
-RUN perl INSTALL.pl -a a --NO_UPDATE --CACHE_VERSION 105
-
-
-ADD AutoMap/ /home/docker/AutoMap/
-RUN chmod 777 /home/docker
-
-
-# copy the app directory into the image
-COPY app/* /home/app/
-COPY app/* /session/app/
-
-
-
-WORKDIR /
+# PriorR usually runs on each user's computer (see README); this image runs it as a server.
+# Mount persistent volumes for:
+#   /data       variant files that can be opened from the app (docker run -v /path/to/files:/data ...)
+#   /var/priorr users, comments, profiles, saved sessions and the WGS cache (docker run -v priorr:/var/priorr ...)
+ENV PRIORR_DIR=/srv/priorr/app/Program_files \
+    PRIORR_SHARED_DIR=/var/priorr/shared \
+    PRIORR_CACHE_DIR=/var/priorr/cache \
+    PRIORR_DATA_DIRS=Data=/data
+RUN mkdir -p /var/priorr /data
 
 EXPOSE 8888
 
-CMD R -e "shiny::runApp('/home/app/PRIORR3.1_docker.R', host='0.0.0.0', port=8888)"
-
-
-
-
-# docker build -t priorr_gonzalo .
+CMD ["Rscript", "-e", "shiny::runApp('/srv/priorr/app', host = '0.0.0.0', port = 8888)"]

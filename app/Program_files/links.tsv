@@ -1,0 +1,29 @@
+# Links of the variant details. Columns: type (gene / variant / cnv), name, url, description.
+# In the url: {gene}, {chrom} (chr10), {chrom_number} (10), {pos}, {ref}, {alt} (as in the VCF),
+# {rsid}, {build} (GRCh38 / GRCh37), {ucsc_build} (hg38 / hg19), {ucsc_number} (38 / 19),
+# {pos_from} / {pos_to} (10 bp around), {gnomad_dataset}; for CNVs {start}, {end}, {build_lower} (grch38),
+# {gnomad_sv_dataset}. The genome build is set in priorr.cfg (genome_build).
+# Lines with a {placeholder} without value for a variant are not shown. Lines starting with # are ignored.
+type	name	url	description
+gene	GeneCards	https://www.genecards.org/cgi-bin/carddisp.pl?gene={gene}	Summary of the gene
+gene	STRING	https://string-db.org/cgi/network?identifiers={gene}&species=9606	Protein interaction network
+gene	OMIM	https://www.omim.org/search?search={gene}	Diseases associated with the gene
+gene	ClinVar	https://www.ncbi.nlm.nih.gov/clinvar/?term={gene}%5Bgene%5D	Variants of the gene in ClinVar
+gene	gnomAD	https://gnomad.broadinstitute.org/gene/{gene}?dataset={gnomad_dataset}	Constraint (pLI, LOEUF) and variants of the gene
+gene	PanelApp	https://panelapp.genomicsengland.co.uk/panels/entities/{gene}	Panels with the gene
+gene	DECIPHER	https://www.deciphergenomics.org/gene/{gene}	Patients and CNVs with the gene
+gene	GTEx	https://gtexportal.org/home/gene/{gene}	Expression by tissue
+gene	UniProt	https://www.uniprot.org/uniprotkb?query=gene_exact:{gene}+AND+organism_id:9606	Protein, domains and function
+gene	Ensembl	https://www.ensembl.org/Homo_sapiens/Gene/Summary?g={gene}	Transcripts and genomic context
+gene	PubMed	https://pubmed.ncbi.nlm.nih.gov/?term={gene}	Publications about the gene
+variant	gnomAD	https://gnomad.broadinstitute.org/variant/{chrom_number}-{pos}-{ref}-{alt}?dataset={gnomad_dataset}	Frequencies of the variant
+variant	VarSome	https://varsome.com/variant/{ucsc_build}/{chrom}-{pos}-{ref}-{alt}	ACMG classification and annotations
+# Franklin: the build can't be given in the url (it opens hg19); enable it if the lab uses GRCh37
+# variant	Franklin	https://franklin.genoox.com/clinical-db/variant/snp/{chrom}-{pos}-{ref}-{alt}	ACMG classification and community
+variant	ClinVar	https://www.ncbi.nlm.nih.gov/clinvar/?term={rsid}	The variant in ClinVar
+variant	dbSNP	https://www.ncbi.nlm.nih.gov/snp/{rsid}	The variant in dbSNP
+variant	SpliceAI	https://spliceailookup.broadinstitute.org/#variant={chrom}-{pos}-{ref}-{alt}&hg={ucsc_number}	Impact on splicing (SpliceAI, Pangolin)
+variant	UCSC	https://genome.ucsc.edu/cgi-bin/hgTracks?db={ucsc_build}&position={chrom}:{pos_from}-{pos_to}	Genome browser around the variant
+cnv	UCSC	https://genome.ucsc.edu/cgi-bin/hgTracks?db={ucsc_build}&position={chrom}:{start}-{end}	Genome browser of the region
+cnv	DECIPHER	https://www.deciphergenomics.org/browser#q/{build_lower}:{chrom_number}:{start}-{end}	CNVs of patients in the region
+cnv	gnomAD SV	https://gnomad.broadinstitute.org/region/{chrom_number}-{start}-{end}?dataset={gnomad_sv_dataset}	Structural variants of the population in the region
