@@ -1,0 +1,11 @@
+# Only the program goes into the image: never the data of the lab or of this computer
+.git
+.github
+shared
+library
+installers
+docs
+priorr.cfg
+app/Program_files/cache
+app/shiny_bookmarks
+**/*.sqlite*

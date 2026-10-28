@@ -66,11 +66,14 @@ The WGS cache is kept in the local disk of each computer (`PRIORR_CACHE_DIR`).
 PriorR can also run as a server for everybody (one computer, users connect with the browser) with Docker:
 
 ```bash
-docker build -t priorr .
-docker run -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data priorr
+docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data tblabfjd/priorr:4.0
 ```
 
-In that case serve it behind HTTPS.
+Then open `http://<server>:8888` (serve it behind HTTPS). `/var/priorr` keeps the users, comments, profiles,
+sessions and the cache; `/data` is what "Open file" shows. Optional, once: AlphaMissense
+(`docker exec priorr Rscript Program_files/scripts/get_alphamissense.R`). The image (Docker Hub
+`tblabfjd/priorr`, tags `4.0` and `latest`; PriorR 3 is the tag `3.0`) is built by `.github/workflows/docker.yml`
+for each release tag; to build it yourself: `docker build -t priorr .`
 
 ## Using it
 
