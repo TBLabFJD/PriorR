@@ -1,5 +1,5 @@
 # Docker image of PriorR (server mode) on Docker Hub: tblabfjd/priorr:<version> and :latest.
-# Built for a release tag (v4.0, v4.1...) or by hand (Actions > docker > Run workflow).
+# Built for a release tag (v4.0, v4.1...) or by hand (Actions > docker > Run workflow, giving the version).
 # Needs two secrets of the GitHub repository (Settings > Secrets and variables > Actions):
 #   DOCKERHUB_USERNAME  a Docker Hub user with permission to push to tblabfjd/priorr
 #   DOCKERHUB_TOKEN     an access token of that user (Docker Hub > Account settings > Personal access tokens)
@@ -7,6 +7,10 @@ name: docker
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag of the image (e.g. 4.0); empty pushes only latest"
+        required: false
   push:
     tags: ["v*"]
 
@@ -22,7 +26,8 @@ jobs:
         with:
           images: tblabfjd/priorr
           tags: |
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=v(.*),group=1
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
             type=raw,value=latest
 
       - uses: docker/setup-buildx-action@v3
