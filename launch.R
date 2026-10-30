@@ -46,7 +46,18 @@ if (length(missing)) {
 # Running on the user's own computer: PriorR can remember the user ("Remember me")
 if (Sys.getenv("PRIORR_LOCAL") == "") Sys.setenv(PRIORR_LOCAL = "1")
 
-port <- as.integer(Sys.getenv("PRIORR_PORT", httpuv::randomPort()))
+# Always the same port (8484, or PRIORR_PORT), so the browser keeps "Remember me" and the address
+# doesn't change; when it is in use (e.g. another PriorR), the next free one
+port_free <- function(p) tryCatch({
+  s <- httpuv::startServer("127.0.0.1", p, list())
+  httpuv::stopServer(s)
+  TRUE
+}, error = function(e) FALSE)
+port <- as.integer(Sys.getenv("PRIORR_PORT", "8484"))
+if (!port_free(port)) {
+  free <- Filter(port_free, port + 1:20)
+  port <- if (length(free)) free[1] else httpuv::randomPort()
+}
 message("PriorR v4.0: http://127.0.0.1:", port, "  (close this window to stop PriorR)")
 shiny::runApp(file.path(priorr_home, "app"), host = "127.0.0.1", port = port,
               launch.browser = Sys.getenv("PRIORR_NO_BROWSER") == "")

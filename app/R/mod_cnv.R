@@ -143,10 +143,15 @@ cnv_server <- function(id, user) {
       c(intersect(key, cols), setdiff(cols, key))
     })
 
+    # keep the filter boxes, search and order of the table when it is drawn again (table.R)
+    table_columns <- reactiveVal(NULL)
+    observeEvent(data(), table_columns(NULL), priority = 10)
     output$table <- DT::renderDT({
       DF <- filtered()
       shown <- DF[, display_columns(), drop = FALSE]
-      priorr_datatable(shown, ns("full_cell"))   # the ACMG class as a colored label (table.R)
+      state <- isolate(table_view_state(table_columns(), input$table_search_columns, input$table_search, input$table_view))
+      table_columns(names(shown))
+      priorr_datatable(shown, ns("full_cell"), state = state)   # the ACMG class as a colored label (table.R)
     }, server = TRUE, funcFilter = priorr_dt_filter)
     observeEvent(input$full_cell, show_full_cell(input$full_cell))
 

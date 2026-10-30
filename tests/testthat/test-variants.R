@@ -138,3 +138,19 @@ test_that("table order: empty frequencies sort as 0, earlier sorts break the tie
   res <- priorr_dt_filter(df, params(list(list(column = "0", dir = "asc"), list(column = "1", dir = "desc"))))
   expect_equal(res$DT_rows_all, c(4L, 2L, 1L, 3L))
 })
+
+test_that("a table drawn again keeps the filter boxes, search, order and page length by column name", {
+  state <- table_view_state(c("CHROM", "SYMBOL", "CADD_PHRED"), c("", "LZ", "10 ... 40"), "chr1",
+                            list(order = list(list("CADD_PHRED", "desc"), list("SYMBOL", "asc")), length = 25))
+  expect_equal(state$search_cols, c(SYMBOL = "LZ", CADD_PHRED = "10 ... 40"))
+  expect_null(table_view_state(NULL, "x", "", list()))
+  # the new table has no CHROM and SYMBOL in another place
+  df <- data.frame(SYMBOL = "A", POS = 1, CADD_PHRED = 2)
+  o <- priorr_datatable(df, "full", state = state)$x$options
+  expect_equal(o$searchCols, list(list(search = "LZ"), NULL, list(search = "10 ... 40")))
+  expect_equal(o$search, list(search = "chr1"))
+  expect_equal(o$order, list(list(2L, "desc"), list(0L, "asc")))
+  expect_equal(o$pageLength, 25L)
+  # nothing kept: DT defaults
+  expect_null(priorr_datatable(df, "full")$x$options$searchCols)
+})

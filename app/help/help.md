@@ -244,6 +244,10 @@ values (e.g. sort by frequency and then by gene: each gene with its variants by 
 allele frequencies (gnomAD, FJD, CSVS...) sort as 0 (not seen in the population), so they come
 first from lower to higher.
 
+The filter boxes of the columns, the search box, the order and the rows per page are kept when the
+table is drawn again (columns hidden or moved, sidebar filters, views); opening another file starts
+clean.
+
 **Variants in gene** (next to GENE): how many different variants of the gene of the row pass the
 current filters (useful for compound heterozygotes); it changes with the filters. In the filtered out
 variants it also counts those of the gene that pass. Variants without gene, consequence or region are kept (ticking "NA" in the lists).

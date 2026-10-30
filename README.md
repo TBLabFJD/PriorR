@@ -111,7 +111,7 @@ the computer (written by the first-run setup), then the one of the lab next to `
 | `PRIORR_CACHE_DIR` | local user cache | Cache of the big variant files |
 | `PRIORR_WGS_MEMORY` | `2GB` | Memory limit while reading big files |
 | `PRIORR_WGS_THREADS` | `4` | Threads while reading big files |
-| `PRIORR_PORT` | random | Port of the local PriorR |
+| `PRIORR_PORT` | 8484 (the next free one if it is in use) | Port of the local PriorR |
 
 Built-in profiles are JSON files in `app/Program_files/profiles` (they can be edited or added) and the
 links of the variant details are in `app/Program_files/links.tsv`. The in-app **Help**

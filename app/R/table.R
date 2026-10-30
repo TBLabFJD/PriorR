@@ -171,15 +171,33 @@ priorr_dt_filter <- function(data, params) {
 
 # Sorting by a column keeps the previous order within equal values: the columns clicked before
 # go after it in the order sent to the server (shift + click still chooses several columns)
+# The order and page length (by column name) also go to the input <table id>_view, so a new
+# table (other columns, other filters) keeps them (table_view_state)
 sort_history_callback <- DT::JS("var sortHistory = [];
   table.on('preXhr.dt', function(e, settings, d) {
-    if (!d.order || !d.order.length) return;
-    if (d.order.length === 1) {
+    if (d.order && d.order.length === 1) {
       var o = d.order[0];
       sortHistory = [o].concat(sortHistory.filter(function(h) { return h.column != o.column; })).slice(0, 5);
       d.order = sortHistory.slice();
-    } else sortHistory = d.order.slice();
+    } else if (d.order && d.order.length) sortHistory = d.order.slice();
+    var id = $(table.table().container()).closest('.html-widget').attr('id');
+    if (!id || !window.Shiny) return;
+    var heads = table.columns().header().toArray().map(function(h) { return $(h).attr('title') || ''; });
+    Shiny.setInputValue(id + '_view', {order: (d.order || []).map(function(o) { return [heads[o.column], o.dir]; }),
+                                       length: d.length});
   });")
+
+# State of the table to keep when it is drawn again (other columns, filters or view): the filter boxes
+# of the columns, the search box, the order and the page length, by column name. `columns`: the
+# columns of the previous table (NULL: nothing to keep, e.g. a new file); the others are the inputs
+# <table id>_search_columns, _search and _view of DT.
+table_view_state <- function(columns, search_columns, search, view) {
+  if (is.null(columns)) return(NULL)
+  cols <- if (length(search_columns) == length(columns)) stats::setNames(as.character(search_columns), columns) else character(0)
+  order <- Filter(function(o) length(o) == 2 && o[2] %in% c("asc", "desc"), lapply(view$order, function(o) as.character(unlist(o))))
+  list(search_cols = cols[!is.na(cols) & nzchar(cols)], search = search %||% "", order = order,
+       length = suppressWarnings(as.integer(view$length)))
+}
 
 # The filter boxes above the columns: while the slider / list of a filter is open, DT lets the outer
 # div (.dataTables_scroll) scroll instead of the table body (DT issue 554), which took the table
@@ -200,7 +218,8 @@ keep_scroll_callback <- DT::JS("var box = table.table().container(), saved = 0;
   });")
 
 # reorder_input: dragging a header sets this input to the column names in their new order
-priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10, reorder_input = NULL) {
+# state: table_view_state of the previous table, applied to this one by column name
+priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10, reorder_input = NULL, state = NULL) {
   hidden <- integer(0)
   if (!is.null(row_color)) {
     DF$.row_color <- row_color
@@ -233,6 +252,14 @@ priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length 
   options <- list(scrollX = TRUE, autoWidth = FALSE, pageLength = page_length,
                   columnDefs = column_defs, searchHighlight = FALSE)
   if (!is.null(row_callback)) options$rowCallback <- row_callback
+  if (!is.null(state)) {
+    kept <- state$search_cols[intersect(names(state$search_cols), headers)]
+    if (length(kept)) options$searchCols <- lapply(headers, function(h) if (h %in% names(kept)) list(search = kept[[h]]))
+    if (nzchar(state$search)) options$search <- list(search = state$search)
+    order <- Filter(function(o) o[1] %in% headers, state$order)
+    if (length(order)) options$order <- lapply(order, function(o) list(match(o[1], headers) - 1L, o[2]))
+    if (length(state$length) && !is.na(state$length) && state$length > 0) options$pageLength <- state$length
+  }
   callback <- DT::JS(paste(cell_click_callback(full_cell_input), sort_history_callback, keep_scroll_callback, sep = "\n"))
   if (!is.null(reorder_input)) {
     options$colReorder <- list(realtime = FALSE)

@@ -486,13 +486,19 @@ snv_server <- function(id, user) {
     snv_view_info_server(input, output, session, data, filtered, glow_ready, glow_panels)
 
     # ---- Table (processed in the server: the browser only gets the visible page) ----
+    # columns of the table shown, to keep its filter boxes, search and order when it is drawn again
+    # (other columns, filters or view); a new file starts clean
+    table_columns <- reactiveVal(NULL)
+    observeEvent(data(), table_columns(NULL), priority = 10)
     output$table <- DT::renderDT({
       DF <- table_rows()
       shown <- display_table(DF)
       shown$Classify <- classify_buttons(nrow(shown), ns("classify"))
       colors <- row_colors(DF, roh = input$roh, other_test = input$other_test_colour,
                            priority = isTRUE(input$color_priority) || identical(input$view, "priority") && !showing_out())
-      priorr_datatable(shown, ns("full_cell"), colors, reorder_input = ns("column_order"))
+      state <- isolate(table_view_state(table_columns(), input$table_search_columns, input$table_search, input$table_view))
+      table_columns(c(names(shown), ".row_color"))
+      priorr_datatable(shown, ns("full_cell"), colors, reorder_input = ns("column_order"), state = state)
     }, server = TRUE, funcFilter = priorr_dt_filter)
     # Dragging a header moves the column in the picker, so the table, the download and the
     # profiles keep the new order
