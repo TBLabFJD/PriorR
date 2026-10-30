@@ -9,6 +9,7 @@ variant_info_ui <- function(id) {
     div(id = ns("details"),
       uiOutput(ns("header")),
       card("Gene structure", "project-diagram", "#00796b", uiOutput(ns("structure"))),
+      uiOutput(ns("project_card")),
       fluidRow(
         column(4,
                card("Transcript", "dna", "#00897b", uiOutput(ns("summary"))),
@@ -34,7 +35,8 @@ variant_label <- function(v) {
 
 # variant: reactive with the selected row (all columns) or NULL; data: all the loaded variants;
 # ped: the family (PED or trio) for the de novo evidence of ACMG
-variant_info_server <- function(id, variant, data, user, ped = reactive(NULL)) {
+# project: the project of the sample (snv_project.R) or NULL
+variant_info_server <- function(id, variant, data, user, ped = reactive(NULL), project = reactive(NULL)) {
   moduleServer(id, function(input, output, session) {
     value <- function(col) {
       v <- variant()
@@ -63,6 +65,24 @@ variant_info_server <- function(id, variant, data, user, ped = reactive(NULL)) {
               if (value("VARIANT_CLASS") != "-") badge(value("VARIANT_CLASS"), "#546e7a"),
               if (value("CANONICAL") == "YES") badge("canonical", "#00897b")))
     })
+    # Other samples of the project with the variant (projects.R)
+    output$project_card <- renderUI({
+      v <- req(variant())
+      pr <- project()
+      if (is.null(pr)) return(NULL)
+      found <- tryCatch(project_variant_samples(pr$id, v$CHROM, v$POS, v$REF, v$ALT), error = function(e) NULL)
+      req(found)
+      others <- found[!found$sample %in% pr$exclude, , drop = FALSE]
+      title <- sprintf("In the project %s: %d of %d other samples", pr$name, nrow(others), pr$total)
+      card(title, "users", "#6a1b9a",
+           if (!nrow(others)) helpText("No other sample of the project has this variant.")
+           else div(style = "max-height: 160px; overflow-y: auto;",
+                    lapply(seq_len(nrow(others)), function(i) div(class = "pr-kv",
+                      span(strong(others$sample[i]), span(class = "text-muted", style = "margin-left: 8px; font-size: 12px;",
+                                                          title = others$file[i], basename(others$file[i]))),
+                      span(if (is.na(others$gt[i])) "present" else others$gt[i])))))
+    })
+
     # Exons and introns of the transcript with the variant (gene_structure.R)
     output$structure <- renderUI({
       v <- req(variant())
@@ -83,7 +103,7 @@ variant_info_server <- function(id, variant, data, user, ped = reactive(NULL)) {
                    sprintf("Exons from the UCSC Genome Browser (%s, %s).", tx$name, genome_build()))))
       }
       drawing <- schematic_svg(value("EXON"), value("INTRON"))
-      if (is.null(drawing)) return(helpText("No exon data for this transcript", if (feature != "-") paste0("(", feature, ")"), "."))
+      if (is.null(drawing)) return(helpText(paste0("No exon data for this transcript", if (feature != "-") paste0(" (", feature, ")"), ".")))
       r <- parse_rank(value("EXON"))
       tagList(drawing,
               div(class = "pr-structure-text", if (feature != "-") strong(feature),

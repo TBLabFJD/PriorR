@@ -16,6 +16,7 @@ snv_params <- function(...) {
     only_keys = NULL,   # variant keys to keep (reanalysis)
     hidden_keys = NULL,   # variant keys to hide (previous analysis rounds, rounds.R)
     gene_counts = NULL,   # variants per gene for Variants_in_gene (NULL = those of the result)
+    project = NULL, max_project = NULL,   # counts in the other samples of a project (projects.R) and their max
     glow = NULL)   # list(sources): the GLOWgenes ranking view instead of the order above
   modifyList(p, list(...))
 }
@@ -66,6 +67,13 @@ filter_snv <- function(df, p = snv_params()) {
     DF$Classification <- p$annotations$classification[i]
     DF$Comments <- ifelse(is.na(i), 0L, p$annotations$n_comments[i])
   }
+  # In how many other samples of the project the variant is (and homozygous)
+  if (!is.null(p$project)) {
+    i <- match(variant_key(key_text(DF$CHROM), key_text(DF$POS), key_text(DF$REF), key_text(DF$ALT)), p$project$counts$key)
+    DF$Project_samples <- ifelse(is.na(i), 0L, p$project$counts$n[i])
+    DF$Project_hom <- ifelse(is.na(i), 0L, p$project$counts$hom[i])
+    if (!is.null(p$max_project)) DF <- keep(DF$Project_samples <= p$max_project)
+  }
   if (!is.null(p$phenotype_genes)) DF <- keep(DF$SYMBOL %in% p$phenotype_genes)
   if (!is.null(p$only_keys)) DF <- keep(variant_key(DF$CHROM, DF$POS, DF$REF, DF$ALT) %in% p$only_keys)
   if (length(p$hidden_keys)) DF <- keep(!variant_key(DF$CHROM, DF$POS, DF$REF, DF$ALT) %in% p$hidden_keys)
@@ -113,10 +121,11 @@ filter_snv <- function(df, p = snv_params()) {
   columns <- if (is.null(p$columns)) names(df) else intersect(p$columns, names(out))
   shown <- unique(c(intersect("GLOW_rank", names(out)), columns, added))
   if (!length(columns)) shown <- c(intersect(c("CHROM", "POS", "REF", "ALT"), names(out)), shown)
-  # the count of variants of the gene next to the gene
-  if (all(c("SYMBOL", "Variants_in_gene") %in% shown)) {
-    shown <- setdiff(shown, "Variants_in_gene")
-    shown <- append(shown, "Variants_in_gene", after = match("SYMBOL", shown))
+  # the count of variants of the gene (and in the project) next to the gene
+  near_gene <- intersect(c("Variants_in_gene", "Project_samples", "Project_hom"), shown)
+  if ("SYMBOL" %in% shown && length(near_gene)) {
+    shown <- setdiff(shown, near_gene)
+    shown <- append(shown, near_gene, after = match("SYMBOL", shown))
   }
   attr(out, "display_columns") <- shown
 
@@ -155,7 +164,8 @@ excluded_rows <- function(df, kept, by_variant = FALSE) {
 excluded_snv <- function(df, rows, p = snv_params(), kept = NULL) {
   filter_snv(df[rows, , drop = FALSE],
              snv_params(annotations = p$annotations, columns = p$columns, roh_samples = p$roh_samples,
-                        other_test_ids = p$other_test_ids, gene_counts = if (!is.null(kept)) gene_variant_counts(kept)))
+                        other_test_ids = p$other_test_ids, project = p$project,
+                        gene_counts = if (!is.null(kept)) gene_variant_counts(kept)))
 }
 
 # The displayed part of a filtered table

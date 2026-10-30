@@ -9,6 +9,8 @@ column_labels <- function(columns) {
   labels[columns == "SYMBOL"] <- "GENE"
   labels[columns == "GLOW_rank"] <- "GLOW rank"
   labels[columns == "Variants_in_gene"] <- "Var. in gene"
+  labels[columns == "Project_samples"] <- "In project"
+  labels[columns == "Project_hom"] <- "Hom in project"
   gsub("_", " ", labels, fixed = TRUE)
 }
 
@@ -24,7 +26,7 @@ ordered_column_choices <- function(columns, shown) column_choices(unique(c(inter
 reordered_columns <- function(selected, order) c(intersect(order, selected), setdiff(selected, order))
 
 column_width <- function(columns) {
-  narrow <- grepl("^(CHROM|REF|ALT|CANONICAL|STRAND|EXON|INTRON|Comments|GLOW_rank)$|_(GT|VAF|AD|DP|SF|GD|VD)$", columns)
+  narrow <- grepl("^(CHROM|REF|ALT|CANONICAL|STRAND|EXON|INTRON|Comments|GLOW_rank|Project_samples|Project_hom)$|_(GT|VAF|AD|DP|SF|GD|VD)$", columns)
   wide <- columns %in% c("HGVSc", "HGVSp", "Consequence", "CLNSIG", "Gene_full_name", "OMIM_phenotype",
                          "Orphanet_disorder", "Existing_variation", "Classification")
   ifelse(narrow, "70px", ifelse(wide, "170px", "110px"))

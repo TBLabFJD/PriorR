@@ -13,7 +13,7 @@ regions, and variants already found by another test of the same patient.
 [Inheritance, family and ROH](#inheritance) · [Prioritization](#prioritization) ·
 [GLOWgenes ranking](#glowgenes) · [Variant information](#variant-information) · [Reads (BAM / CRAM)](#reads) ·
 [ACMG criteria](#acmg) · [Comments and classifications](#comments) · [Reanalysis](#reanalysis) ·
-[Analysis rounds](#rounds) · [Saved sessions](#sessions) ·
+[Analysis rounds](#rounds) · [Projects](#projects) · [Saved sessions](#sessions) ·
 [Users and groups](#users) · [CNVs](#cnv) · [Files the lab can adapt](#files) ·
 [Troubleshooting](#troubleshooting) · [Citations](#citations)
 
@@ -448,6 +448,25 @@ classified variants of the file that changed since their classification: new Cli
 classification, frequency crossing 0.0001 / 0.01 / 0.05, the gene in new green PanelApp panels
 (of your PanelApp copy) or a different ACMG suggestion. **Classification > Only classified
 variants with changes since their classification** shows only those variants.
+
+<h2 id="projects">Projects (other samples)</h2>
+
+A project groups the variant files of several samples (usually one file per sample; a file with
+several samples, e.g. a trio, counts each sample by its `<sample>_GT` column). While a sample is
+analysed, each variant says in how many **other** samples of the project it is:
+
+- **Project (other samples) > Manage projects:** create a project and add its files (several at once
+  with Ctrl / Shift). Each file is read once in the background and only its variants and genotypes
+  are kept (a genome takes a few MB; a few minutes the first time, seconds if PriorR opened it
+  before), in `shared/projects` for the whole lab. A file that changes is read again with *Index the
+  new files*. Only who created a project or an administrator can delete it (the variant files are
+  never touched).
+- **Project:** choose the project of the loaded sample. The table gets **In project** (number of
+  other samples with the variant) and **Hom in project** (of them, homozygous), next to GENE. The
+  samples of the loaded file are not counted (all of them in a trio file).
+- **Hide variants in more than this number of other samples:** e.g. 2 to remove recurrent artefacts
+  or variants frequent in your population.
+- **Variant information** lists the other samples with the variant, their genotype and file.
 
 <h2 id="rounds">Analysis rounds</h2>
 

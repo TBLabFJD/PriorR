@@ -103,6 +103,7 @@ snv_sidebar_ui <- function(id) {
       open_file_ui(ns("other_test"), "Open VCF of another test", "Open the VCF of another test (.vcf / .vcf.gz)"),
       check("other_test_colour", "Highlight variants NOT in the other test"),
       check("other_test_filter", "Hide variants already in the other test")),
+    snv_project_sidebar_ui(ns),
     shinydashboard::menuItem("Analysis rounds", icon = icon("layer-group"),
       helpText("A round keeps the variants of the current gene panels / HPO / genes, frequency and CADD (the other filters are not used). With new filters, hide them to see only the new variants."),
       textInput(ns("round_name"), "Name of the round (empty: sample and filters)"),
@@ -341,6 +342,7 @@ snv_server <- function(id, user) {
         loaded_text,
         set_link("show_pass", paste(n(nrow(filtered())), "pass"), !out, "#2e7d32"), " · ",
         set_link("show_out", paste(n(length(out_rows())), "filtered out"), out, "#c62828"),
+        if (!is.null(project())) sprintf(" · project %s: %s other samples", project()$name, n(project()$total)),
         sprintf(" · profile: %s%s", applied_profile() %||% "None",
                 if (hidden) sprintf(" · hiding %s variants of previous rounds", n(hidden)) else ""))
     })
@@ -368,6 +370,9 @@ snv_server <- function(id, user) {
 
     # ---- Analysis rounds (snv_rounds.R) ----
     hidden_keys <- snv_rounds_server(input, output, session, user, data, function() params(), loader$loaded)
+
+    # ---- Project: counts in the other samples (snv_project.R) ----
+    project <- snv_project_server(input, output, session, user, data, loader$loaded)
 
     # ---- PanelApp of the user (snv_panelapp.R) ----
     snv_panelapp_server(input, output, session, user)
@@ -458,7 +463,8 @@ snv_server <- function(id, user) {
         hidden_keys = hidden_keys(),
         exclude_clinvar_benign = input$exclude_benign, prioritize = identical(input$view, "priority"),
         annotations = if (isTRUE(input$annotate)) annotations(),
-        columns = input$columns, roh_samples = roh_samples)
+        columns = input$columns, roh_samples = roh_samples,
+        project = project(), max_project = if (!is.null(project()) && isTRUE(input$max_project >= 0)) input$max_project)
     })
 
     # GLOWgenes ranking view: its own pathogenicity filters (glowgenes.json) instead of the sidebar ones
@@ -476,6 +482,7 @@ snv_server <- function(id, user) {
         req(glow_ready())
         p <- params()
         return(filter_snv(data(), snv_params(columns = p$columns, annotations = p$annotations, other_test_ids = p$other_test_ids,
+                                             project = p$project, max_project = p$max_project,
                                              hide_other_test = p$hide_other_test, roh_samples = p$roh_samples, glow_max = p$glow_max, hidden_keys = p$hidden_keys,
                                              glow = list(sources = glow_panels(), hide_rank0 = isTRUE(input$glow_hide_rank0)))))
       }
@@ -514,7 +521,7 @@ snv_server <- function(id, user) {
       i <- input$table_rows_selected
       if (length(i) != 1 || i > nrow(table_rows())) NULL else table_rows()[i, , drop = FALSE]
     })
-    info <- variant_info_server("info", selected, data, user, ped)
+    info <- variant_info_server("info", selected, data, user, ped, project)
     reads_server("reads", selected, data)
 
     # "Classify" on a row: select it and open its comments
