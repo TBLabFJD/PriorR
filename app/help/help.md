@@ -232,8 +232,9 @@ They apply to the loaded variants and can be changed at any time. Hiding columns
 the result; any column can be hidden in *Columns*, and dragging a header of the table moves the
 column (the order is kept in profiles, saved sessions and the download).
 
-**Pass / filtered out:** the line above the table counts the rows that pass the filters and those
-that don't. Click *filtered out* to see the variants the filters remove (with their columns,
+**Pass / filtered out:** the line above the table says how many rows the file has, how many passed
+the load filters of the profile (only those are loaded), and of them how many pass the sidebar filters
+(or the view) and how many don't. Click *filtered out* to see the variants the filters remove (with their columns,
 classifications and details, in the order of the file; the download saves them too) and *pass*, or
 *Back to … that pass*, to return. In the GLOWgenes view the other transcripts of a shown variant
 don't count as filtered out.

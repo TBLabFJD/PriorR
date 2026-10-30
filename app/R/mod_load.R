@@ -213,7 +213,8 @@ load_server <- function(id, user, current_view = function() list()) {
         state$running <- FALSE
         df <- withProgress(message = "Loading the variants...", value = 0.5,
                            read_variants(file.path(state$workdir, "variants.tsv")))
-        loaded(list(df = df, profile = state$profile, restoring = isolate(restoring()), file = state$file))
+        loaded(list(df = df, profile = state$profile, restoring = isolate(restoring()), file = state$file,
+                    total_rows = status$total_rows))
         restoring(FALSE)
         toggle_modal(ns("dialog"), show = FALSE)
       } else if (status$stage == "error") {

@@ -332,8 +332,13 @@ snv_server <- function(id, user) {
       # the two sets of variants: those that pass the filters and those that don't (links to show each one)
       set_link <- function(id, label, active, color)
         actionLink(ns(id), label, class = "pr-set-link", style = sprintf("color: %s;%s", color, if (active) " font-weight: 700; text-decoration: underline;" else ""))
-      p(class = "text-muted", style = "margin: 0;",
-        sprintf("%s rows loaded · ", n(nrow(data()))),
+      # rows of the file, rows that passed the load filters (all loaded), and then the sidebar filters
+      total <- loader$loaded()$total_rows
+      loaded_text <- if (length(total) && total > nrow(data()))
+        sprintf("%s rows in the file · %s passed the load filters · ", n(total), n(nrow(data())))
+      else sprintf("%s rows loaded · ", n(nrow(data())))
+      p(class = "text-muted", style = "margin: 0;", title = "pass / filtered out: the sidebar filters (or the view) on the loaded rows",
+        loaded_text,
         set_link("show_pass", paste(n(nrow(filtered())), "pass"), !out, "#2e7d32"), " · ",
         set_link("show_out", paste(n(length(out_rows())), "filtered out"), out, "#c62828"),
         sprintf(" · profile: %s%s", applied_profile() %||% "None",
