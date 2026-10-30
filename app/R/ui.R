@@ -39,6 +39,8 @@ ui <- function(request) {
           .main-sidebar .irs { margin-right: 12px; }
           .main-sidebar .radio label, .main-sidebar .checkbox label, .main-sidebar .control-label { white-space: normal; }
           /* view buttons above the table: the view not in use in grey */
+          .pr-viewbar > :first-child { flex-shrink: 0; }
+          .pr-viewbar #snv-view .btn-group { display: inline-flex; }
           #snv-view .btn:not(.active) { background: #e0e0e0; border-color: #cfcfcf; color: #757575; box-shadow: none; }
           #snv-view .btn:not(.active):hover { background: #d5d5d5; color: #424242; }
           .pr-patient { display: inline-block; margin: 9px 0 0 25px; padding: 5px 14px; border-radius: 16px;

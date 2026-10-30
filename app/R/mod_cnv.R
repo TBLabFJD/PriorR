@@ -5,7 +5,7 @@ cnv_sidebar_ui <- function(id) {
   ns <- NS(id)
   picker <- function(id, label, choices = NULL, selected = choices)
     shinyWidgets::pickerInput(ns(id), label, choices = choices, selected = selected,
-                              options = list(`actions-box` = TRUE, `live-search` = TRUE), multiple = TRUE)
+                              options = list(`actions-box` = TRUE, `live-search` = TRUE, size = 10), multiple = TRUE)
   check <- function(id, label, value = FALSE)
     shinyWidgets::prettyCheckbox(ns(id), label, value = value, outline = TRUE, status = "success")
   panels <- function(id, label, specific = NA) selectizeInput(ns(id), label, choices = panel_choices(specific = specific), multiple = TRUE,

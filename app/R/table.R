@@ -181,6 +181,24 @@ sort_history_callback <- DT::JS("var sortHistory = [];
     } else sortHistory = d.order.slice();
   });")
 
+# The filter boxes above the columns: while the slider / list of a filter is open, DT lets the outer
+# div (.dataTables_scroll) scroll instead of the table body (DT issue 554), which took the table
+# back to the left. The horizontal position goes to the outer div and back.
+keep_scroll_callback <- DT::JS("var box = table.table().container(), saved = 0;
+  var body = function() { return $(box).find('.dataTables_scrollBody'); };
+  box.addEventListener('focus', function(e) {
+    if ($(e.target).closest('thead').length && body().css('overflow-x') !== 'visible') saved = body().scrollLeft();
+  }, true);
+  // where the outer div is (DT resets it when the filter closes)
+  box.addEventListener('scroll', function(e) {
+    if ($(e.target).hasClass('dataTables_scroll') && e.target.scrollLeft > 0) saved = e.target.scrollLeft;
+  }, true);
+  $(box).on('show', 'thead div', function() { $(box).find('.dataTables_scroll').scrollLeft(saved); });
+  $(box).on('hide', 'thead div', function() {
+    $(box).find('.dataTables_scroll').scrollLeft(0);
+    $(box).find('.dataTables_scrollBody, .dataTables_scrollHead').scrollLeft(saved);
+  });")
+
 # reorder_input: dragging a header sets this input to the column names in their new order
 priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10, reorder_input = NULL) {
   hidden <- integer(0)
@@ -215,7 +233,7 @@ priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length 
   options <- list(scrollX = TRUE, autoWidth = FALSE, pageLength = page_length,
                   columnDefs = column_defs, searchHighlight = FALSE)
   if (!is.null(row_callback)) options$rowCallback <- row_callback
-  callback <- DT::JS(paste(cell_click_callback(full_cell_input), sort_history_callback, sep = "\n"))
+  callback <- DT::JS(paste(cell_click_callback(full_cell_input), sort_history_callback, keep_scroll_callback, sep = "\n"))
   if (!is.null(reorder_input)) {
     options$colReorder <- list(realtime = FALSE)
     callback <- DT::JS(paste(callback, column_reorder_callback(reorder_input), sep = "\n"))

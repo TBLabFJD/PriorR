@@ -6,7 +6,7 @@ snv_sidebar_ui <- function(id) {
   ns <- NS(id)
   picker <- function(id, label, choices = NULL, selected = choices)
     shinyWidgets::pickerInput(ns(id), label, choices = choices, selected = selected,
-                              options = list(`actions-box` = TRUE, `live-search` = TRUE), multiple = TRUE)
+                              options = list(`actions-box` = TRUE, `live-search` = TRUE, size = 10), multiple = TRUE)
   check <- function(id, label, value = FALSE)
     shinyWidgets::prettyCheckbox(ns(id), label, value = value, outline = TRUE, status = "success")
   file <- function(id, label, accept = c(".txt", ".csv", ".tsv")) fileInput(ns(id), label, accept = accept)
@@ -122,7 +122,7 @@ snv_patient_ui <- function(id) uiOutput(NS(id)("patient"), inline = TRUE)
 snv_main_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    div(style = "display: flex; align-items: center; gap: 15px; margin-bottom: 6px;",
+    div(class = "pr-viewbar", style = "display: flex; align-items: center; gap: 15px; margin-bottom: 6px;",
         shinyWidgets::radioGroupButtons(ns("view"), NULL, status = "success", size = "sm",
           choices = c("Sidebar filters" = "filters", "PriorR priority" = "priority", "GLOWgenes ranking" = "glow"), selected = "filters"),
         conditionalPanel("input.view == 'filters'", ns = ns, style = "margin-bottom: -10px;",
