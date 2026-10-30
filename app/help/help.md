@@ -229,7 +229,8 @@ close to 0 when the gene is predicted for many diseases (e.g. highly connected g
 <h2 id="filters">Sidebar filters</h2>
 
 They apply to the loaded variants and can be changed at any time. Hiding columns doesn't change
-the result. Variants without gene, consequence or region are kept (ticking "NA" in the lists).
+the result; any column can be hidden in *Columns*, and dragging a header of the table moves the
+column (the order is kept in profiles, saved sessions and the download). Variants without gene, consequence or region are kept (ticking "NA" in the lists).
 Frequencies or scores that are empty or not a number count as missing: a missing frequency or CADD
 never removes a variant.
 

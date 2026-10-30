@@ -87,6 +87,8 @@ test_that("SNV module: a loaded file gets the filters of its profile; filter, cl
     out <- filtered()
     expect_equal(out$CADD_PHRED, c(16, 30))
     expect_equal(attr(out, "display_columns"), c("SYMBOL", "CADD_PHRED"))
+    # dragging a header: the new order goes to the column picker (and so to the table and profiles)
+    session$setInputs(column_order = c("CADD_PHRED", "SYMBOL", "Classify"))
 
     # the current filters and columns are saved as a profile of the user
     session$setInputs(profile_name = "Mi retina", save_profile = 1)

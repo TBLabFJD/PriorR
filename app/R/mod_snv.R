@@ -233,8 +233,9 @@ snv_server <- function(id, user) {
         sample_cols <- grep("_(GT|VAF|AD|DP)$", names(df), value = TRUE)
         default_columns <- intersect(c(default_snv_columns[1:8], sample_cols, default_snv_columns[-(1:8)]), names(df))
         columns <- intersect(unlist(p$columns), names(df))
-        shinyWidgets::updatePickerInput(session, "columns", choices = column_choices(names(df)),
-                                        selected = if (length(columns)) columns else default_columns)
+        if (!length(columns)) columns <- default_columns
+        shinyWidgets::updatePickerInput(session, "columns", choices = ordered_column_choices(names(df), columns),
+                                        selected = columns)
       }
       applied_profile(p$name)
     }
@@ -299,7 +300,7 @@ snv_server <- function(id, user) {
       r <- restored$input
       restored$input <- NULL
       if (isTRUE(l$restoring) && !is.null(r)) {
-        shinyWidgets::updatePickerInput(session, "columns", choices = column_choices(names(df)), selected = r$columns)
+        shinyWidgets::updatePickerInput(session, "columns", choices = ordered_column_choices(names(df), r$columns), selected = r$columns)
         shinyWidgets::updatePickerInput(session, "consequence", choices = c(sort(unique(df$Consequence)), "NA"), selected = r$consequence)
         shinyWidgets::updatePickerInput(session, "type", choices = sort(unique(df$VARIANT_CLASS)), selected = r$type)
         shinyWidgets::updatePickerInput(session, "region", selected = r$region)
@@ -443,8 +444,16 @@ snv_server <- function(id, user) {
       shown <- display_table(DF)
       shown$Classify <- classify_buttons(nrow(shown), ns("classify"))
       colors <- row_colors(DF, roh = input$roh, other_test = input$other_test_colour, priority = isTRUE(input$color_priority) || identical(input$view, "priority"))
-      priorr_datatable(shown, ns("full_cell"), colors)
+      priorr_datatable(shown, ns("full_cell"), colors, reorder_input = ns("column_order"))
     }, server = TRUE)
+    # Dragging a header moves the column in the picker, so the table, the download and the
+    # profiles keep the new order
+    observeEvent(input$column_order, {
+      df <- data()
+      req(df)
+      columns <- reordered_columns(input$columns %||% names(df), input$column_order)
+      shinyWidgets::updatePickerInput(session, "columns", choices = ordered_column_choices(names(df), columns), selected = columns)
+    })
     observeEvent(input$full_cell, show_full_cell(input$full_cell))
 
     selected <- reactive({

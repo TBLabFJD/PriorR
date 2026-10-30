@@ -14,6 +14,14 @@ column_labels <- function(columns) {
 # Choices of a column picker: the labels shown, the original names as values
 column_choices <- function(columns) stats::setNames(columns, column_labels(columns))
 
+# Choices of the column picker: the displayed columns first, in their order (the order of the
+# picker is the order of the table), then the others
+ordered_column_choices <- function(columns, shown) column_choices(unique(c(intersect(shown, columns), columns)))
+
+# Columns in the order of the headers after dragging one (ColReorder): `order` (column names) moves
+# the shown columns, the selected ones that are not shown stay at the end
+reordered_columns <- function(selected, order) c(intersect(order, selected), setdiff(selected, order))
+
 column_width <- function(columns) {
   narrow <- grepl("^(CHROM|REF|ALT|CANONICAL|STRAND|EXON|INTRON|Comments|GLOW_rank)$|_(GT|VAF|AD|DP|SF|GD|VD)$", columns)
   wide <- columns %in% c("HGVSc", "HGVSp", "Consequence", "CLNSIG", "Gene_full_name", "OMIM_phenotype",
@@ -41,6 +49,15 @@ cell_click_callback <- function(full_cell_input) {
     var header = table.column(cell.index().column).header();
     Shiny.setInputValue('%s', {column: $(header).attr('title') || $(header).text(), text: String(cell.data())}, {priority: 'event'});
   });", full_cell_input))
+}
+
+# After dragging a header: the column names (title of the headers) in the new order
+column_reorder_callback <- function(input_id) {
+  sprintf("table.on('column-reorder', function() {
+    var cols = [];
+    table.columns().every(function() { var h = $(this.header()).attr('title'); if (h) cols.push(h); });
+    Shiny.setInputValue('%s', cols, {priority: 'event'});
+  });", input_id)
 }
 
 # Small colored labels of some columns (ClinVar, genotypes, ACMG class of CNVs, gene in bold)
@@ -111,7 +128,8 @@ row_classes <- c(red = "pr-row-red", darkorange = "pr-row-orange", salmon = "pr-
 
 # DT table of variants. `row_color` (optional) colors whole rows; `full_cell_input` is the
 # input that receives the clicked cell.
-priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10) {
+# reorder_input: dragging a header sets this input to the column names in their new order
+priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10, reorder_input = NULL) {
   hidden <- integer(0)
   if (!is.null(row_color)) {
     DF$.row_color <- row_color
@@ -144,10 +162,16 @@ priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length 
   options <- list(scrollX = TRUE, autoWidth = FALSE, pageLength = page_length,
                   columnDefs = column_defs, searchHighlight = FALSE)
   if (!is.null(row_callback)) options$rowCallback <- row_callback
+  callback <- cell_click_callback(full_cell_input)
+  if (!is.null(reorder_input)) {
+    options$colReorder <- list(realtime = FALSE)
+    callback <- DT::JS(paste(callback, column_reorder_callback(reorder_input), sep = "\n"))
+  }
   DT::datatable(
-    DF, container = container, callback = cell_click_callback(full_cell_input),
+    DF, container = container, callback = callback,
     filter = "top", class = "display nowrap compact priorr-table", rownames = FALSE,
-    selection = "single", escape = FALSE, options = options)
+    selection = "single", escape = FALSE, options = options,
+    extensions = if (!is.null(reorder_input)) "ColReorder" else list())
 }
 
 show_full_cell <- function(cell) {

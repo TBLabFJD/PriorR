@@ -75,6 +75,15 @@ test_that("column labels: SYMBOL as GENE, no underscores, sample field first", {
   expect_equal(names(column_choices(c("SYMBOL", "HGVSc"))), c("GENE", "HGVSc"))
 })
 
+test_that("column order: the picker lists the shown columns first, dragging a header moves them", {
+  all <- c("CHROM", "POS", "REF", "ALT", "SYMBOL", "HGVSc", "CADD_PHRED")
+  expect_equal(unname(ordered_column_choices(all, c("SYMBOL", "CHROM", "nope"))),
+               c("SYMBOL", "CHROM", "POS", "REF", "ALT", "HGVSc", "CADD_PHRED"))
+  # the table shows SYMBOL, CHROM, POS (+ GLOW_rank and Classify); CADD_PHRED is selected but not shown
+  expect_equal(reordered_columns(c("SYMBOL", "CHROM", "POS", "CADD_PHRED"), c("GLOW_rank", "POS", "SYMBOL", "CHROM", "Classify")),
+               c("POS", "SYMBOL", "CHROM", "CADD_PHRED"))
+})
+
 test_that("BAM / CRAM indexes are found with any naming, also in capitals", {
   dir <- tempfile(); dir.create(dir)
   f <- function(...) { p <- file.path(dir, ...); file.create(p); p }
