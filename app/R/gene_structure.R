@@ -126,9 +126,8 @@ svg_text <- function(x, y, label, size = 12, anchor = "middle", color = "#37474f
           x, y, size, anchor, color, weight, htmltools::htmlEscape(label))
 
 # Drawing of the transcript in its own direction (5' left): exons at scale (thin UTR, thick coding
-# part), introns shortened (square root of their length) so the whole gene fits; the variant in red.
-# For a CNV, `cnv` = list(start, end, type): its region shaded and its exons in red (DEL) / blue (DUP).
-transcript_svg <- function(tx, pos, loc, width = 1000, cnv = NULL) {
+# part), introns shortened (square root of their length) so the whole gene fits; the variant in red
+transcript_svg <- function(tx, pos, loc, width = 1000) {
   n <- length(tx$exon_starts)
   minus <- tx$strand == "-"
   o <- if (minus) rev(seq_len(n)) else seq_len(n)
@@ -159,8 +158,8 @@ transcript_svg <- function(tx, pos, loc, width = 1000, cnv = NULL) {
   parts <- c(sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#90a4ae" stroke-width="2"/>', left, y, right, y))
   for (i in seq_len(n)) {
     xa <- gx(s[i]); xb <- gx(e[i]); if (xb < xa) { t <- xa; xa <- xb; xb <- t }
-    here <- if (!is.null(cnv)) i %in% loc$exons else identical(loc$region, "exon") && loc$number == i
-    fill <- if (!here) "#26a69a" else if (is.null(cnv)) "#e65100" else cnv_color(cnv$type)
+    here <- identical(loc$region, "exon") && loc$number == i
+    fill <- if (here) "#e65100" else "#26a69a"
     parts <- c(parts, sprintf('<rect x="%.1f" y="%d" width="%.1f" height="12" fill="%s"><title>Exon %d (%d bp)</title></rect>',
                               xa, y - 6, max(xb - xa, 1.5), fill, i, as.integer(e[i] - s[i])))
     # coding part, thicker
@@ -175,7 +174,7 @@ transcript_svg <- function(tx, pos, loc, width = 1000, cnv = NULL) {
   last_x <- -Inf
   for (i in seq_len(n)) {
     xm <- (gx(s[i]) + gx(e[i])) / 2
-    must <- i %in% c(1, n) || (identical(loc$region, "exon") && loc$number == i) || (length(loc$exons) && i %in% range(loc$exons))
+    must <- i %in% c(1, n) || (identical(loc$region, "exon") && loc$number == i)
     if (must || xm - last_x > 22) {
       parts <- c(parts, svg_text(xm, y + 30, i, size = 11, color = if (must) "#37474f" else "#78909c"))
       last_x <- xm
@@ -186,17 +185,10 @@ transcript_svg <- function(tx, pos, loc, width = 1000, cnv = NULL) {
     a <- gx(if (minus) e[j + 1] else e[j]); b <- gx(if (minus) s[j] else s[j + 1])
     parts <- c(parts, sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#e65100" stroke-width="4"/>', min(a, b), y, max(a, b), y))
   }
-  if (is.null(cnv)) {
-    xv <- gx(pos - 1)
-    parts <- c(parts,
-               sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#c62828" stroke-width="2"/>', xv, 10, xv, y + 14),
-               sprintf('<polygon points="%.1f,10 %.1f,0 %.1f,0" fill="#c62828"/>', xv, xv - 6, xv + 6))
-  } else {
-    xa <- gx(cnv$start - 1); xb <- gx(cnv$end); if (xb < xa) { t <- xa; xa <- xb; xb <- t }
-    parts <- c(sprintf('<rect x="%.1f" y="4" width="%.1f" height="%d" fill="%s" fill-opacity="0.15" stroke="%s" stroke-dasharray="4 3"/>',
-                       xa, max(xb - xa, 2), y + 14, cnv_color(cnv$type), cnv_color(cnv$type)), parts)
-  }
+  xv <- gx(pos - 1)
   parts <- c(parts,
+             sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#c62828" stroke-width="2"/>', xv, 10, xv, y + 14),
+             sprintf('<polygon points="%.1f,10 %.1f,0 %.1f,0" fill="#c62828"/>', xv, xv - 6, xv + 6),
              svg_text(14, y + 5, "5′", size = 12, color = "#607d8b"),
              svg_text(width - 14, y + 5, "3′", size = 12, color = "#607d8b"))
   HTML(sprintf('<svg viewBox="0 0 %d 84" width="100%%" style="max-height: 110px; display: block;" role="img" aria-label="Exons of %s">%s</svg>',
@@ -212,15 +204,6 @@ cnv_location <- function(tx, start, end) {
   s <- tx$exon_starts[o]; e <- tx$exon_ends[o]
   exons <- which(e > start - 1 & s < end)
   list(exons = exons, total = n, whole = start - 1 <= tx$tx_start && end >= tx$tx_end)
-}
-
-cnv_location_text <- function(loc, type) {
-  what <- if (identical(toupper(type), "DUP")) "Duplicated" else if (identical(toupper(type), "DEL")) "Deleted" else "Affected"
-  if (loc$whole) return(sprintf("%s: the whole gene (%d exons)", what, loc$total))
-  if (!length(loc$exons)) return(sprintf("Inside an intron or outside the exons (%d exons)", loc$total))
-  r <- range(loc$exons)
-  sprintf("%s: exon%s %s of %d (part of the gene)", what, if (r[1] == r[2]) "" else "s",
-          if (r[1] == r[2]) r[1] else paste0(r[1], "–", r[2]), loc$total)
 }
 
 # Transcript of each gene of a CNV: the one of the file (Tx) when given, otherwise the RefSeq NM_
@@ -254,6 +237,58 @@ cnv_gene_transcripts <- function(genes, chrom, start, end, tx_names = list(), bu
     tryCatch(jsonlite::write_json(tx, gene_file(g), auto_unbox = TRUE, digits = NA), error = function(e) NULL)
   }
   out
+}
+
+# One line for a CNV: the region of the CNV (and a margin) at genomic scale, the genes with their
+# exons, the CNV shaded (red DEL, blue DUP) and the exons inside it in that color
+cnv_region_svg <- function(txs, start, end, type, width = 1000) {
+  txs <- Filter(Negate(is.null), txs)
+  pad <- max((end - start) * 0.25, 2000)
+  from <- start - pad; to <- end + pad
+  left <- 40; right <- width - 40; y <- 46
+  x <- function(g) left + (min(max(g, from), to) - from) / (to - from) * (right - left)
+  color <- cnv_color(type)
+  parts <- c(sprintf('<rect x="%.1f" y="16" width="%.1f" height="44" fill="%s" fill-opacity="0.13" stroke="%s" stroke-dasharray="4 3"/>',
+                     x(start - 1), max(x(end) - x(start - 1), 2), color, color),
+             sprintf('<line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#cfd8dc" stroke-width="1"/>', left, y, right, y))
+  last_label <- -Inf
+  for (tx in txs[order(vapply(txs, function(t) t$tx_start, 1))]) {
+    parts <- c(parts, sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#78909c" stroke-width="2"/>',
+                              x(tx$tx_start), y, x(tx$tx_end), y))
+    for (i in seq_along(tx$exon_starts)) {
+      s <- tx$exon_starts[i]; e <- tx$exon_ends[i]
+      if (e < from || s > to) next
+      inside <- e > start - 1 && s < end
+      parts <- c(parts, sprintf('<rect x="%.1f" y="%d" width="%.1f" height="14" fill="%s"/>',
+                                x(s), y - 7, max(x(e) - x(s), 1.5), if (inside) color else "#26a69a"))
+    }
+    xm <- (max(x(tx$tx_start), left) + min(x(tx$tx_end), right)) / 2
+    if (xm - last_label > 60) {
+      parts <- c(parts, svg_text(xm, y - 14, tx$gene, size = 11, color = "#37474f", weight = "bold"))
+      last_label <- xm
+    }
+  }
+  scale <- function(v) if (v >= 1e6) sprintf("%.1f Mb", v / 1e6) else sprintf("%.0f kb", v / 1e3)
+  parts <- c(parts, svg_text(left, 78, format(round(from), big.mark = ","), size = 10, anchor = "start", color = "#90a4ae"),
+             svg_text(right, 78, format(round(to), big.mark = ","), size = 10, anchor = "end", color = "#90a4ae"),
+             svg_text((x(start - 1) + x(end)) / 2, 78, paste(toupper(type), scale(end - start + 1)), size = 10, color = color, weight = "bold"))
+  HTML(sprintf('<svg viewBox="0 0 %d 84" width="100%%" style="max-height: 110px; display: block;" role="img" aria-label="CNV and genes">%s</svg>',
+               width, paste(parts, collapse = "")))
+}
+
+# Short text of the genes of a CNV: "DMD: exons 38–45 of 79 · PMP22: whole gene"
+cnv_genes_text <- function(txs, start, end, max_genes = 8) {
+  txs <- Filter(Negate(is.null), txs)
+  items <- vapply(txs, function(tx) {
+    loc <- cnv_location(tx, start, end)
+    what <- if (loc$whole) "whole gene" else if (!length(loc$exons)) "no exons" else {
+      r <- range(loc$exons)
+      sprintf("exon%s %s of %d", if (r[1] == r[2]) "" else "s", if (r[1] == r[2]) r[1] else paste0(r[1], "\u2013", r[2]), loc$total)
+    }
+    paste0(tx$gene, ": ", what)
+  }, "")
+  if (length(items) > max_genes) items <- c(items[seq_len(max_genes)], sprintf("+%d genes", length(items) - max_genes))
+  paste(items, collapse = " \u00b7 ")
 }
 
 # Without coordinates: exons of the same size numbered, the exon or intron of the variant marked

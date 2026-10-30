@@ -62,15 +62,16 @@ test_that("CNVs: exons of the gene inside the CNV, and the transcript of each ge
   loc <- cnv_location(plus, 250, 450)
   expect_equal(loc$exons, 2L)
   expect_false(loc$whole)
-  expect_equal(cnv_location_text(loc, "DEL"), "Deleted: exon 2 of 3 (part of the gene)")
   expect_equal(cnv_location(minus, 250, 450)$exons, 2L)
   expect_equal(cnv_location(minus, 150, 450)$exons, 2:3)   # minus strand: exon 3 is the first of the genome
-  expect_match(cnv_location_text(cnv_location(plus, 50, 700), "DUP"), "Duplicated: the whole gene \\(3 exons\\)")
-  expect_match(cnv_location_text(cnv_location(plus, 210, 290), "DEL"), "Inside an intron")
-  svg <- as.character(transcript_svg(plus, 250, loc, cnv = list(start = 250, end = 450, type = "DEL")))
+  expect_true(cnv_location(plus, 50, 700)$whole)
+  gene2 <- modifyList(plus, list(gene = "GENE2", tx_start = 2000, tx_end = 2600, exon_starts = c(2000, 2500), exon_ends = c(2100, 2600)))
+  expect_equal(cnv_genes_text(list(plus, gene2, NULL), 250, 2650), "GENE1: exons 2\u20133 of 3 \u00b7 GENE2: whole gene")
+  expect_equal(cnv_genes_text(list(plus), 210, 290), "GENE1: no exons")
+  svg <- as.character(cnv_region_svg(list(plus, gene2), 250, 2650, "DUP"))
   expect_match(svg, "fill-opacity")
-  expect_match(svg, "#c62828")
-
+  expect_match(svg, "#1565c0")
+  expect_match(svg, "GENE2")
   dir <- tempfile()
   rm(list = ls(ucsc_offline), envir = ucsc_offline)
   calls <- 0

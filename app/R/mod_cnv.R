@@ -265,32 +265,23 @@ cnv_server <- function(id, user) {
                  card("OMIM / GenCC", "notes-medical", "#ad1457", long_text("OMIM_phenotype"), strong("GenCC"), long_text("GenCC_disease")))))
     })
 
-    # Exons of the genes of the selected CNV inside it (gene_structure.R): up to 6 genes
+    # The genes of the selected CNV and their exons inside it, in one line (gene_structure.R)
     output$structure <- renderUI({
       cnv <- req(selected())
       value <- function(col) if (col %in% names(cnv) && !is.na(cnv[[col]]) && nzchar(as.character(cnv[[col]]))) as.character(cnv[[col]]) else NA
       genes <- setdiff(trimws(strsplit(value("Gene_name") %||% "", ";", fixed = TRUE)[[1]]), c("", "-", NA))
       start <- suppressWarnings(as.numeric(cnv$SV_start)); end <- suppressWarnings(as.numeric(cnv$SV_end))
       if (!length(genes) || is.na(start) || is.na(end)) return(helpText("No genes in this CNV."))
-      shown <- genes[seq_len(min(6, length(genes)))]
+      genes <- genes[seq_len(min(30, length(genes)))]
       # the transcript of the file (split rows of AnnotSV: Tx) for its gene
       tx_names <- if (!is.na(value("Tx")) && length(genes) == 1) stats::setNames(list(sub("\\..*$", "", value("Tx"))), genes) else list()
-      txs <- cnv_gene_transcripts(shown, value("SV_chrom"), start, end, tx_names)
+      txs <- Filter(Negate(is.null), cnv_gene_transcripts(genes, value("SV_chrom"), start, end, tx_names))
+      if (!length(txs)) return(helpText("No exon data for the genes of this CNV (no connection or unknown genes)."))
       type <- value("SV_type")
-      tagList(
-        lapply(shown, function(g) {
-          tx <- txs[[g]]
-          if (is.null(tx)) return(div(class = "pr-structure-text", style = "margin: 6px 0;", strong(g), " \u00b7 no exon data (no connection or unknown gene)"))
-          loc <- cnv_location(tx, start, end)
-          div(style = "margin-bottom: 6px;",
-              transcript_svg(tx, start, loc, cnv = list(start = start, end = end, type = type)),
-              div(class = "pr-structure-text", strong(g), sprintf(" (%s) \u00b7 ", tx$name), cnv_location_text(loc, type)))
-        }),
-        if (length(genes) > length(shown)) helpText(sprintf("and %d more genes (%s...).", length(genes) - length(shown),
-                                                           paste(utils::head(setdiff(genes, shown), 5), collapse = ", "))),
-        helpText(style = "margin: 2px 0 0 0;", "Exons at scale (the coding part thicker), introns shortened; the CNV shaded",
-                 sprintf("(%s). Exons from the UCSC Genome Browser (the transcript of the file, or the RefSeq one with more exons; %s).",
-                         if (identical(toupper(type), "DUP")) "blue" else "red", genome_build())))
+      tagList(cnv_region_svg(txs, start, end, type),
+              div(class = "pr-structure-text", cnv_genes_text(txs, start, end)),
+              helpText(style = "margin: 2px 0 0 0;", "Genomic scale; the CNV shaded and its exons in",
+                       sprintf("%s. Exons from the UCSC Genome Browser (%s).", if (identical(toupper(type), "DUP")) "blue" else "red", genome_build())))
     })
 
     output$download <- downloadHandler(

@@ -88,7 +88,7 @@ classifications shared by the lab, and the reads of each variant.</p>
       column can be hidden or moved; sorting keeps the previous order within ties; empty allele frequencies sort as 0;
       the column filters, search and order are kept when the table changes.</li>
   <li>The <b>patient</b> in the header; PriorR always opens at <code>http://127.0.0.1:8484</code>.</li>
-  <li><b>CNVs</b>: gene structure with the exons taken by the CNV, pass / filtered out, patient in the header and movable columns.</li>
+  <li><b>CNVs</b>: the genes and exons taken by the CNV in one line, pass / filtered out, patient in the header and movable columns.</li>
 </ul></div>
 
 <div class="new" id="new"><b>What is new in PriorR 4.0</b>
@@ -321,8 +321,8 @@ benign gains / losses. <b>GLOWgenes ranking</b> gives each CNV the best rank of 
 The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 18).
 As in the SNVs, the header shows the patient (the sample chosen in <i>Samples</i>), the line above the table counts the CNVs that
 <b>pass</b> the filters and those <b>filtered out</b> (of the chosen samples and annotation mode; click to see them) and the columns can
-be moved by dragging their header. <b>Gene structure</b> draws each gene of the CNV (up to 6) with the CNV shaded, red for deletions
-and blue for duplications, and says which exons it takes (fig. 19).</p>
+be moved by dragging their header. <b>Gene structure</b> draws in one line the region of the CNV at genomic scale with its genes and exons, the CNV shaded (red for
+deletions, blue for duplications) and its exons in that color, and says which exons of each gene it takes (fig. 19).</p>
 <figure><img src="img/14_cnv.png"><figcaption>Figure 17. CNVs of the demo ordered by the GLOWgenes rank of their genes.</figcaption></figure>
 <figure><img src="img/15_cnv_info.png"><figcaption>Figure 18. CNV information.</figcaption></figure>
 <figure><img src="img/21_cnv_structure.png"><figcaption>Figure 19. Gene structure of a deletion of DMD exons 38–45 (synthetic multi-sample CNV table with public gene coordinates).</figcaption></figure>
