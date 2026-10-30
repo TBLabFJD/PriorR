@@ -1,10 +1,10 @@
 FROM condaforge/miniforge3:24.9.2-0
 
 LABEL authors="Raquel Romero, Pablo Minguez" \
-      description="PriorR v4.1: prioritization of disease-linked genetic variants" \
+      description="PriorR v4.2: prioritization of disease-linked genetic variants" \
       org.opencontainers.image.source="https://github.com/TBLabFJD/PriorR" \
       org.opencontainers.image.vendor="Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación Jiménez Díaz" \
-      org.opencontainers.image.version="4.1"
+      org.opencontainers.image.version="4.2"
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a -y

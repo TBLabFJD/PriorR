@@ -1,4 +1,4 @@
-# PriorR 4.1 user guide
+# PriorR 4.2 user guide
 
 `guide.html` is the source of `app/www/PriorR4_UserGuide.pdf` (linked from the Help tab). The screenshots
 (`img/`) were taken from PriorR with the synthetic demo data (`app/Program_files/examples/demo_*_synthetic.tsv`,

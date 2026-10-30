@@ -6,7 +6,7 @@
 # priorr.cfg is a text file with "key: value" lines (see priorr.cfg.example).
 # Other settings: genome_build (links.R).
 
-priorr_version <- "4.1"
+priorr_version <- "4.2"
 priorr_name <- paste0("PriorR v", priorr_version)
 
 priorr_home <- normalizePath("..", mustWork = FALSE)        # the app runs in <PriorR>/app

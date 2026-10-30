@@ -1,4 +1,4 @@
-# PriorR v4.1 help
+# PriorR v4.2 help
 
 PriorR is developed by the [Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación
 Jiménez Díaz](https://www.translationalbioinformaticslab.es/). Code: [github.com/TBLabFJD/PriorR](https://github.com/TBLabFJD/PriorR).
@@ -17,7 +17,7 @@ regions, and variants already found by another test of the same patient.
 [Users and groups](#users) · [CNVs](#cnv) · [Files the lab can adapt](#files) ·
 [Troubleshooting](#troubleshooting) · [Citations](#citations)
 
-The complete user guide with screenshots is in the **PriorR 4.1 user guide (PDF)** (link in the box on the right).
+The complete user guide with screenshots is in the **PriorR 4.2 user guide (PDF)** (link in the box on the right).
 
 <h2 id="how-it-works">How it works</h2>
 
@@ -32,7 +32,7 @@ The complete user guide with screenshots is in the **PriorR 4.1 user guide (PDF)
 
 <h2 id="installation">Installation</h2>
 
-**With the installers** (`PriorR-4.1-setup.exe` for Windows, `PriorR-4.1.pkg` for macOS): wizards that
+**With the installers** (`PriorR-4.2-setup.exe` for Windows, `PriorR-4.2.pkg` for macOS): wizards that
 install PriorR for the user (no administrator needed) and add a PriorR icon; the Windows one also asks
 for the shared folder of the lab. R must be installed first: the installers say so when it is missing.
 They are not signed: Windows shows "Windows protected your PC" (*More info > Run anyway*) and macOS needs
