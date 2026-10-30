@@ -4,7 +4,7 @@
 ; next to it. Asks for the shared folder of the lab and writes priorr.cfg. R is not installed:
 ; when it is missing the installer says so and offers to open the download page.
 
-#define AppVersion "4.2"
+#define AppVersion "4.2.1"
 #define Root "..\.."
 
 [Setup]

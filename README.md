@@ -1,4 +1,4 @@
-# PriorR v4.2
+# PriorR v4.2.1
 
 PriorR is a prioritization program of disease-linked genetic variants developed within the Genetics & Genomics
 Department of La Fundación Jiménez Díaz University Hospital. It analyses the output of the FJD pipeline of SNVs and
@@ -6,6 +6,9 @@ CNVs: filtering by gene panels, population frequencies, pathogenicity predictors
 phenotypes (HPO), regions and variants already found by another test of the same patient.
 
 ## What's new in 4.2
+
+- 4.2.1: the table of exons of the transcripts is read without the R.utils package (in 4.2 its download
+  failed on computers without it).
 
 - **Variant information**: the panels of the library with the gene, and the other variants of the gene in the
   sample with their parental origin (compound heterozygotes).
@@ -53,8 +56,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
 
 ## Installation (shared folder, each user runs it on their computer)
 
-**With the installers** (GitHub *Releases*, or *Actions > installers*): `PriorR-4.2-setup.exe` (Windows) and
-`PriorR-4.2.pkg` (macOS) are wizards that install PriorR for the user (no administrator needed), add a
+**With the installers** (GitHub *Releases*, or *Actions > installers*): `PriorR-4.2.1-setup.exe` (Windows) and
+`PriorR-4.2.1.pkg` (macOS) are wizards that install PriorR for the user (no administrator needed), add a
 PriorR icon and, on Windows, ask for the shared folder of the lab. R must be installed (https://cran.r-project.org):
 the installers say so when it is missing. They are not signed: Windows shows "Windows protected your PC"
 (*More info > Run anyway*) and macOS needs right click > *Open* the first time. Built by
@@ -88,7 +91,7 @@ The WGS cache is kept in the local disk of each computer (`PRIORR_CACHE_DIR`).
 PriorR can also run as a server for everybody (one computer, users connect with the browser) with Docker:
 
 ```bash
-docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data tblabfjd/priorr:4.2
+docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data tblabfjd/priorr:latest
 ```
 
 Then open `http://<server>:8888` (serve it behind HTTPS). `/var/priorr` keeps the users, comments, profiles,

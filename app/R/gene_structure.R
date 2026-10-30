@@ -29,7 +29,11 @@ normalize_ucsc <- function(r) {
 # A genePred table of UCSC: ncbiRefSeq and GENCODE (16 columns: bin first, gene in name2) or
 # knownGene (12 columns, without gene)
 read_genepred <- function(path) {
-  df <- data.table::fread(path, header = FALSE, sep = "\t", quote = "", colClasses = "character", data.table = FALSE)
+  # DuckDB reads the .gz tables (fread would need the R.utils package)
+  con <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  df <- DBI::dbGetQuery(con, sprintf("SELECT * FROM read_csv(%s, delim = '\t', header = false, all_varchar = true, quote = '', escape = '', null_padding = true)",
+                                     sql_str(path)))
   if (ncol(df) >= 16) df <- df[, -1]
   data.frame(name = df[[1]], base = sub("\\.[0-9]+$", "", df[[1]]), chrom = df[[2]], strand = df[[3]],
              txStart = as.numeric(df[[4]]), txEnd = as.numeric(df[[5]]), cdsStart = as.numeric(df[[6]]),
