@@ -99,11 +99,14 @@ filter_snv <- function(df, p = snv_params()) {
   rownames(out) <- NULL
 
   # Displayed columns (all the columns are kept for the variant details and the colors):
-  # hiding a column never changes the filters. Variant key columns are always shown,
-  # plus the columns added above
+  # hiding a column never changes the filters. Any column can be hidden (the variant of a row
+  # is taken from the whole table); the columns added above are always shown, and the variant
+  # key when nothing else would be
   added <- setdiff(names(out), names(df))
   columns <- if (is.null(p$columns)) names(df) else intersect(p$columns, names(out))
-  attr(out, "display_columns") <- unique(c(intersect(c("GLOW_rank", "CHROM", "POS", "REF", "ALT"), names(out)), columns, added))
+  shown <- unique(c(intersect("GLOW_rank", names(out)), columns, added))
+  if (!length(shown)) shown <- intersect(c("CHROM", "POS", "REF", "ALT"), names(out))
+  attr(out, "display_columns") <- shown
 
   # Row colors
   attr(out, "priority") <- priority_class(out)

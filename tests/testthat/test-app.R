@@ -86,7 +86,7 @@ test_that("SNV module: a loaded file gets the filters of its profile; filter, cl
                       columns = c("SYMBOL", "CADD_PHRED"))
     out <- filtered()
     expect_equal(out$CADD_PHRED, c(16, 30))
-    expect_equal(attr(out, "display_columns"), c("CHROM", "POS", "REF", "ALT", "SYMBOL", "CADD_PHRED"))
+    expect_equal(attr(out, "display_columns"), c("SYMBOL", "CADD_PHRED"))
 
     # the current filters and columns are saved as a profile of the user
     session$setInputs(profile_name = "Mi retina", save_profile = 1)

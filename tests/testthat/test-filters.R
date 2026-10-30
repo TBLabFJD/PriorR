@@ -32,14 +32,17 @@ test_that("several typed genes", {
   expect_equal(filter_snv(df, snv_params(genes = split_genes("A, C")))$SYMBOL, c("A", "C"))
 })
 
-test_that("hiding columns never changes the rows, the key columns are always shown", {
+test_that("hiding columns never changes the rows, any column can be hidden", {
   df <- make_variants(6, CLNSIG = c("Pathogenic", NA, "Benign", NA, "Pathogenic", NA), CADD_PHRED = c(30, 5, 20, 25, 1, 40))
   p <- snv_params(min_cadd = 10, exclude_clinvar_benign = TRUE, prioritize = TRUE)
   all_columns <- filter_snv(df, modifyList(p, list(columns = names(df))))
   few_columns <- filter_snv(df, modifyList(p, list(columns = "SYMBOL")))
   expect_equal(all_columns$POS, few_columns$POS)
-  expect_equal(attr(few_columns, "display_columns"), c("CHROM", "POS", "REF", "ALT", "SYMBOL"))
+  expect_equal(attr(few_columns, "display_columns"), "SYMBOL")
   expect_equal(attr(all_columns, "priority"), attr(few_columns, "priority"))
+  # nothing selected: the variant key, so the table is never empty
+  no_columns <- filter_snv(df, modifyList(p, list(columns = character(0))))
+  expect_equal(attr(no_columns, "display_columns"), c("CHROM", "POS", "REF", "ALT"))
 })
 
 test_that("the same parameters always give the same table", {
