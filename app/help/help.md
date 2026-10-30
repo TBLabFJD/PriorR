@@ -371,6 +371,13 @@ In *GLOWgenes ranking* of the sidebar, "Rank the genes with":
 
 <h2 id="variant-information">Variant information</h2>
 
+**Gene in panels:** the panels of the library with the gene of the variant, by source (PanelApp genes
+in green, amber or red), whether it is in the genes of the HPO terms chosen, and the GLOWgenes and SGDS
+of the file. **Other variants of the gene in this sample:** the other variants of the gene that pass the
+current filters (as counted by *Var. in gene*), with the genotypes of the samples; with a family
+(trio or PED) each variant says from which parent it comes, and when two variants come from different
+parents it warns of a compound heterozygote (in trans).
+
 **Gene structure:** the exons and introns of the transcript of the row (`Feature`: NM_ / NR_ of RefSeq
 or ENST of Ensembl) from 5′ to 3′, with the variant in red and its exon or intron in orange: exons at
 scale (the coding part thicker, the UTRs thinner), introns shortened so the whole gene fits. Below,

@@ -16,6 +16,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
   of the gene that pass); any column can be hidden and moved by dragging its header; sorting by a column keeps
   the previous order within ties and empty allele frequencies sort as 0; the filters of the columns, the
   search and the order are kept when the table changes.
+- **Variant information**: the panels of the library with the gene, and the other variants of the gene in the
+  sample with their parental origin (compound heterozygotes).
 - The patient (samples of the file) in the header; rows of the file and of the load filters above the table.
 - PriorR always opens at `http://127.0.0.1:8484` (so *Remember me* works).
 - **CNVs**: the genes and exons taken by each CNV in one line (red deletions, blue duplications), pass /

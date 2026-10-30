@@ -521,7 +521,7 @@ snv_server <- function(id, user) {
       i <- input$table_rows_selected
       if (length(i) != 1 || i > nrow(table_rows())) NULL else table_rows()[i, , drop = FALSE]
     })
-    info <- variant_info_server("info", selected, data, user, ped, project)
+    info <- variant_info_server("info", selected, data, user, ped, project, table_rows, reactive(list(phenotype = input$phenotype)))
     reads_server("reads", selected, data)
 
     # "Classify" on a row: select it and open its comments

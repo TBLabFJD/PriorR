@@ -18,10 +18,12 @@ variant_info_ui <- function(id) {
                card("Genotypes", "users", "#1565c0", uiOutput(ns("genotypes"))),
                card("Read depth (DP)", "chart-bar", "#0277bd", uiOutput(ns("depth_text")), plotOutput(ns("depth"), height = 100))),
         column(4,
-               card("Population frequency", "globe-europe", "#2e7d32", uiOutput(ns("frequencies"))))),
+               card("Population frequency", "globe-europe", "#2e7d32", uiOutput(ns("frequencies"))),
+               card("Gene in panels", "list-check", "#00695c", uiOutput(ns("gene_panels"))))),
       # full width: predictors on the left, scores in two columns on the right
       card("Pathogenicity", "exclamation-triangle", "#e65100",
            fluidRow(column(4, uiOutput(ns("predictors"))), column(8, uiOutput(ns("scores"))))),
+      uiOutput(ns("gene_variants")),
       fluidRow(
         column(4, card("OMIM phenotype", "notes-medical", "#ad1457", uiOutput(ns("omim")))),
         column(4, card("ACMG (suggested)", "balance-scale", "#283593", uiOutput(ns("acmg")))),
@@ -35,8 +37,10 @@ variant_label <- function(v) {
 
 # variant: reactive with the selected row (all columns) or NULL; data: all the loaded variants;
 # ped: the family (PED or trio) for the de novo evidence of ACMG
-# project: the project of the sample (snv_project.R) or NULL
-variant_info_server <- function(id, variant, data, user, ped = reactive(NULL), project = reactive(NULL)) {
+# project: the project of the sample (snv_project.R) or NULL; table: the variants shown (other variants
+# of the gene); context: list(phenotype = HPO terms chosen)
+variant_info_server <- function(id, variant, data, user, ped = reactive(NULL), project = reactive(NULL),
+                                table = reactive(NULL), context = reactive(list())) {
   moduleServer(id, function(input, output, session) {
     value <- function(col) {
       v <- variant()
@@ -65,6 +69,52 @@ variant_info_server <- function(id, variant, data, user, ped = reactive(NULL), p
               if (value("VARIANT_CLASS") != "-") badge(value("VARIANT_CLASS"), "#546e7a"),
               if (value("CANONICAL") == "YES") badge("canonical", "#00897b")))
     })
+    # Panels of the library with the gene, the chosen HPO terms, GLOWgenes and SGDS (gene_cards.R)
+    output$gene_panels <- renderUI({
+      v <- req(variant())
+      gene <- value("SYMBOL")
+      if (gene == "-") return(helpText("No gene."))
+      p <- gene_panels(gene)
+      colors <- c(green = "#2e7d32", amber = "#ef8f00", red = "#c62828", `in` = "#546e7a")
+      hpo <- context()$phenotype
+      extra <- list(
+        if (length(hpo)) kv("Your HPO terms", if (gene %in% hpo_genes(hpo)) span(class = "text-success", icon("check"), "the gene is in their genes")
+                                              else span(class = "text-muted", "not in their genes")),
+        if (value("GLOWgenes") != "-") kv("GLOWgenes (file)", value("GLOWgenes")),
+        if (value("SGDS") != "-") kv("SGDS", value("SGDS")))
+      tagList(
+        if (!nrow(p)) helpText("The gene is in no panel of the library.")
+        else div(style = "max-height: 170px; overflow-y: auto; font-size: 13px;",
+                 lapply(split(p, factor(p$source, levels = unique(p$source))), function(g) div(style = "margin-bottom: 4px;",
+                   div(class = "text-muted", style = "font-size: 12px;", sprintf("%s (%d)", g$source[1], nrow(g))),
+                   lapply(seq_len(nrow(g)), function(i) span(class = "pr-chip", title = if (g$level[i] != "in") paste(g$level[i], "gene"),
+                     style = sprintf("background: %s; color: #fff; margin: 1px 3px 1px 0; display: inline-block; font-size: 11px; padding: 1px 7px; white-space: normal; text-align: left;",
+                                     colors[[g$level[i]]]), g$name[i]))))),
+        extra)
+    })
+
+    # The other variants of the gene that pass the filters (compound heterozygotes), with the
+    # parental origin when there is a family (gene_cards.R)
+    output$gene_variants <- renderUI({
+      v <- req(variant())
+      if (value("SYMBOL") == "-") return(NULL)
+      others <- gene_other_variants(table(), v, ped())
+      own <- variant_origin(v, ped())
+      origin_badge <- function(o) if (!is.na(o)) badge(paste("from", o), switch(o, father = "#1565c0", mother = "#ad1457", "both parents" = "#6a1b9a", "#e65100"))
+      trans <- !is.na(own) && own %in% c("father", "mother") && any(others$origin %in% setdiff(c("father", "mother"), own))
+      card(sprintf("Other variants of %s in this sample (%d with the current filters)", value("SYMBOL"), nrow(others)), "code-branch", "#37474f",
+           if (!is.na(own)) div(style = "margin-bottom: 6px;", "This variant: ", origin_badge(own),
+                                if (trans) span(class = "text-danger", style = "margin-left: 8px; font-weight: 600;",
+                                                "another variant of the gene comes from the other parent: compound heterozygous (in trans)")),
+           if (!nrow(others)) helpText("No other variant of the gene passes the current filters.")
+           else div(style = "max-height: 180px; overflow-y: auto;",
+                    lapply(seq_len(nrow(others)), function(i) div(class = "pr-kv",
+                      span(span(class = "pr-pos", style = "font-size: 13px;", others$position[i]),
+                           span(style = "margin-left: 10px;", others$change[i])),
+                      span(span(class = "text-muted", style = "font-size: 12px; margin-right: 8px;", others$genotypes[i]),
+                           origin_badge(others$origin[i]))))))
+    })
+
     # Other samples of the project with the variant (projects.R)
     output$project_card <- renderUI({
       v <- req(variant())
