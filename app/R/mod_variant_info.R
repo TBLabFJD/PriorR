@@ -8,6 +8,7 @@ variant_info_ui <- function(id) {
     uiOutput(ns("empty")),
     div(id = ns("details"),
       uiOutput(ns("header")),
+      card("Gene structure", "project-diagram", "#00796b", uiOutput(ns("structure"))),
       fluidRow(
         column(4,
                card("Transcript", "dna", "#00897b", uiOutput(ns("summary"))),
@@ -58,10 +59,41 @@ variant_info_server <- function(id, variant, data, user, ped = reactive(NULL)) {
               badge(paste(impact, "impact"), impact_color[[impact]]),
               badge(gsub("_", " ", strsplit(value("Consequence"), ",")[[1]][1]), impact_color[[impact]]),
               if (value("CLNSIG") != "-") badge(paste("ClinVar:", gsub("_", " ", value("CLNSIG"))), clinvar_color(value("CLNSIG"))),
-              if (!is.na(priority)) badge(paste("PriorR", priority), if (priority == "red") "#c62828" else "#ef6c00"),
+              if (length(priority) && !is.na(priority)) badge(paste("PriorR", priority), if (priority == "red") "#c62828" else "#ef6c00"),
               if (value("VARIANT_CLASS") != "-") badge(value("VARIANT_CLASS"), "#546e7a"),
               if (value("CANONICAL") == "YES") badge("canonical", "#00897b")))
     })
+    # Exons and introns of the transcript with the variant (gene_structure.R)
+    output$structure <- renderUI({
+      v <- req(variant())
+      feature <- value("Feature")
+      pos <- suppressWarnings(as.numeric(value("POS")))
+      hgvsc <- sub("^[^:]*:", "", value("HGVSc"))
+      tx <- if (!is.na(pos)) transcript_structure(feature, value("CHROM"), pos)
+      if (!is.null(tx)) {
+        loc <- variant_location(tx, pos)
+        other_version <- tx$name != feature
+        return(tagList(
+          transcript_svg(tx, pos, loc),
+          div(class = "pr-structure-text",
+              strong(tx$name), if (nzchar(tx$gene)) paste0(" (", tx$gene, ")"),
+              if (other_version) span(class = "text-warning", sprintf(" [the file has %s]", feature)),
+              " · ", location_text(loc), if (hgvsc != "-") paste0(" · ", hgvsc)),
+          helpText(style = "margin: 2px 0 0 0;", "Exons at scale (the coding part thicker); introns shortened.",
+                   sprintf("Exons from the UCSC Genome Browser (%s, %s).", tx$name, genome_build()))))
+      }
+      drawing <- schematic_svg(value("EXON"), value("INTRON"))
+      if (is.null(drawing)) return(helpText("No exon data for this transcript", if (feature != "-") paste0("(", feature, ")"), "."))
+      r <- parse_rank(value("EXON"))
+      tagList(drawing,
+              div(class = "pr-structure-text", if (feature != "-") strong(feature),
+                  if (!is.null(r)) sprintf(" · Exon %s of %d", sub("/.*", "", value("EXON")), r$total)
+                  else sprintf(" · Intron %s of %d", sub("/.*", "", value("INTRON")), parse_rank(value("INTRON"))$total),
+                  if (hgvsc != "-") paste0(" · ", hgvsc)),
+              helpText(style = "margin: 2px 0 0 0;", "Schematic (EXON / INTRON of the file): the exon coordinates of the transcript",
+                       "could not be obtained from the UCSC Genome Browser (no connection or unknown transcript)."))
+    })
+
     # External links (Program_files/links.tsv)
     output$links <- renderUI({
       v <- req(variant())

@@ -39,6 +39,10 @@ ui <- function(request) {
           .main-sidebar .irs { margin-right: 12px; }
           .main-sidebar .radio label, .main-sidebar .checkbox label, .main-sidebar .control-label { white-space: normal; }
           /* view buttons above the table: the view not in use in grey */
+          /* lists of the sidebar (columns...): the list scrolls inside a menu that never cuts it */
+          .main-sidebar .bootstrap-select .dropdown-menu.open { max-height: none !important; overflow: visible !important; }
+          .main-sidebar .bootstrap-select div.inner { max-height: 300px !important; overflow-y: auto !important; }
+          .main-sidebar .bootstrap-select ul.dropdown-menu.inner { max-height: none !important; overflow: visible !important; padding-bottom: 4px; }
           .pr-viewbar > :first-child { flex-shrink: 0; }
           .pr-viewbar #snv-view .btn-group { display: inline-flex; }
           #snv-view .btn:not(.active) { background: #e0e0e0; border-color: #cfcfcf; color: #757575; box-shadow: none; }

@@ -14,6 +14,7 @@ patient_header <- function(proband, others = character(0), file = NULL) {
 info_css <- shiny::tags$style(shiny::HTML("
   .pr-header { background: linear-gradient(90deg, #e8f5e9, #ffffff); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; }
   .pr-header .pr-gene { font-size: 26px; font-weight: 700; color: #1b5e20; margin-right: 10px; }
+  .pr-structure-text { margin-top: 2px; font-size: 13px; color: #37474f; }
   .pr-header .pr-pos { font-size: 16px; color: #37474f; font-family: monospace; }
   .pr-badge { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 600;
               margin: 2px 4px 2px 0; color: #fff; white-space: nowrap; }

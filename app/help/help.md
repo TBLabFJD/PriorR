@@ -363,6 +363,16 @@ In *GLOWgenes ranking* of the sidebar, "Rank the genes with":
 
 <h2 id="variant-information">Variant information</h2>
 
+**Gene structure:** the exons and introns of the transcript of the row (`Feature`: NM_ / NR_ of RefSeq
+or ENST of Ensembl) from 5′ to 3′, with the variant in red and its exon or intron in orange: exons at
+scale (the coding part thicker, the UTRs thinner), introns shortened so the whole gene fits. Below,
+the exon or intron and the distance to its borders in bp (e.g. "Intron 6 of 22 (4,241 bp): 122 bp
+after exon 6, 4,120 bp before exon 7"), useful for splicing. The exons come from the UCSC Genome
+Browser the first time a transcript is seen (only the name of the transcript and the position are
+sent) and are kept in `shared/annotations/transcripts` for everybody. When the version of the
+file is not there, another version of the transcript is used (it says so). Without internet or for
+an unknown transcript, a schematic drawing with the `EXON` / `INTRON` columns of the file.
+
 Selecting a row shows the impact of the variant (the `IMPACT` column of VEP when the file has it;
 otherwise PriorR derives it from the consequence: HIGH = stop, frameshift, canonical splice site,
 start / stop lost; MODERATE = missense, in-frame, splice donor region; LOW = synonymous, splice
