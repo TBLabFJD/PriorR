@@ -493,7 +493,7 @@ snv_server <- function(id, user) {
       colors <- row_colors(DF, roh = input$roh, other_test = input$other_test_colour,
                            priority = isTRUE(input$color_priority) || identical(input$view, "priority") && !showing_out())
       priorr_datatable(shown, ns("full_cell"), colors, reorder_input = ns("column_order"))
-    }, server = TRUE)
+    }, server = TRUE, funcFilter = priorr_dt_filter)
     # Dragging a header moves the column in the picker, so the table, the download and the
     # profiles keep the new order
     observeEvent(input$column_order, {

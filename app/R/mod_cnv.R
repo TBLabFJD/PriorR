@@ -147,7 +147,7 @@ cnv_server <- function(id, user) {
       DF <- filtered()
       shown <- DF[, display_columns(), drop = FALSE]
       priorr_datatable(shown, ns("full_cell"))   # the ACMG class as a colored label (table.R)
-    }, server = TRUE)
+    }, server = TRUE, funcFilter = priorr_dt_filter)
     observeEvent(input$full_cell, show_full_cell(input$full_cell))
 
     selected <- reactive({

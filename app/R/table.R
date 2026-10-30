@@ -129,6 +129,58 @@ row_classes <- c(red = "pr-row-red", darkorange = "pr-row-orange", salmon = "pr-
 
 # DT table of variants. `row_color` (optional) colors whole rows; `full_cell_input` is the
 # input that receives the clicked cell.
+# Allele frequency columns (gnomAD, FJD, CSVS...; not the VAF of the samples): empty = not seen
+# in the population, so it sorts as 0
+is_af_column <- function(columns) grepl("(^|_)(AF|MAF)(_|$)", columns) & !grepl("_VAF$", columns)
+
+# Sort key of a column: empty frequencies as 0; text columns with numbers sort as numbers
+sort_key <- function(x, name) {
+  if (!is.numeric(x)) {
+    num <- suppressWarnings(as.numeric(as.character(x)))
+    if (all(is.na(num) == is.na(x))) x <- num
+  }
+  if (is.numeric(x)) {
+    if (is_af_column(name)) x[is.na(x)] <- 0
+    return(x)
+  }
+  xtfrm(x)
+}
+
+# Server side processing of the tables (DT::renderDT funcFilter): DT's search and pages, with
+# the order of sort_key. The rows of DT_rows_all / DT_rows_current stay those of `data`, so the
+# selected rows are right.
+priorr_dt_filter <- function(data, params) {
+  dt_filter <- utils::getFromNamespace("dataTablesFilter", "DT")
+  keys <- list()
+  for (o in params$order) {
+    col <- params$columns[[o[["column"]]]]
+    if (!identical(col[["orderable"]], "true")) next
+    j <- match(col[["name"]], names(data))
+    if (is.na(j)) j <- as.integer(o[["column"]]) + 1L
+    key <- sort_key(data[[j]], names(data)[j])
+    keys[[length(keys) + 1]] <- if (identical(o[["dir"]], "desc")) -key else key
+  }
+  if (!length(keys)) return(dt_filter(data, params))
+  perm <- do.call(order, c(keys, list(na.last = TRUE)))
+  params$order <- list()
+  res <- dt_filter(data[perm, , drop = FALSE], params)
+  res$DT_rows_all <- perm[res$DT_rows_all]
+  res$DT_rows_current <- perm[res$DT_rows_current]
+  res
+}
+
+# Sorting by a column keeps the previous order within equal values: the columns clicked before
+# go after it in the order sent to the server (shift + click still chooses several columns)
+sort_history_callback <- DT::JS("var sortHistory = [];
+  table.on('preXhr.dt', function(e, settings, d) {
+    if (!d.order || !d.order.length) return;
+    if (d.order.length === 1) {
+      var o = d.order[0];
+      sortHistory = [o].concat(sortHistory.filter(function(h) { return h.column != o.column; })).slice(0, 5);
+      d.order = sortHistory.slice();
+    } else sortHistory = d.order.slice();
+  });")
+
 # reorder_input: dragging a header sets this input to the column names in their new order
 priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length = 10, reorder_input = NULL) {
   hidden <- integer(0)
@@ -163,7 +215,7 @@ priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length 
   options <- list(scrollX = TRUE, autoWidth = FALSE, pageLength = page_length,
                   columnDefs = column_defs, searchHighlight = FALSE)
   if (!is.null(row_callback)) options$rowCallback <- row_callback
-  callback <- cell_click_callback(full_cell_input)
+  callback <- DT::JS(paste(cell_click_callback(full_cell_input), sort_history_callback, sep = "\n"))
   if (!is.null(reorder_input)) {
     options$colReorder <- list(realtime = FALSE)
     callback <- DT::JS(paste(callback, column_reorder_callback(reorder_input), sep = "\n"))

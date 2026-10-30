@@ -119,3 +119,22 @@ test_that("patient in the header: proband, other samples, file as tooltip", {
   expect_match(as.character(patient_header(character(0), file = "x.tsv")), "x.tsv")
   expect_null(patient_header(NA))
 })
+
+test_that("table order: empty frequencies sort as 0, earlier sorts break the ties", {
+  expect_equal(is_af_column(c("gnomADg_AF", "gnomADg_AF_popmax", "FJD_MAF_AF", "CSVS_AF", "P001_VAF", "CADD_PHRED")),
+               c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE))
+  expect_equal(sort_key(c(0.2, NA, 0.01), "gnomADe_AF"), c(0.2, 0, 0.01))
+  expect_equal(sort_key(c(20, NA, 5), "CADD_PHRED"), c(20, NA, 5))
+  expect_equal(sort_key(c("10", "9", NA), "x"), c(10, 9, NA))   # numbers as text
+  df <- data.frame(SYMBOL = c("B", "A", "B", "A"), gnomADg_AF = c(0.1, NA, 0.001, 0.1), stringsAsFactors = FALSE)
+  columns <- stats::setNames(lapply(names(df), function(n) list(name = n, orderable = "true", searchable = "true",
+                                                                search = list(value = "", regex = "false"))), c("0", "1"))
+  params <- function(order) list(draw = "1", start = "0", length = "-1", escape = "false", columns = columns,
+                                 search = list(value = "", regex = "false", caseInsensitive = "true"), order = order)
+  # gnomAD ascending: the empty one first
+  res <- priorr_dt_filter(df, params(list(list(column = "1", dir = "asc"))))
+  expect_equal(res$DT_rows_all, c(2L, 3L, 1L, 4L))
+  # gene, then (clicked before) frequency descending within each gene
+  res <- priorr_dt_filter(df, params(list(list(column = "0", dir = "asc"), list(column = "1", dir = "desc"))))
+  expect_equal(res$DT_rows_all, c(4L, 2L, 1L, 3L))
+})

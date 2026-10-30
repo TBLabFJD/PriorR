@@ -239,6 +239,11 @@ classifications and details, in the order of the file; the download saves them t
 *Back to … that pass*, to return. In the GLOWgenes view the other transcripts of a shown variant
 don't count as filtered out.
 
+**Sorting:** click a header to sort by it; the column sorted before keeps its order within equal
+values (e.g. sort by frequency and then by gene: each gene with its variants by frequency). Empty
+allele frequencies (gnomAD, FJD, CSVS...) sort as 0 (not seen in the population), so they come
+first from lower to higher.
+
 **Variants in gene** (next to GENE): how many different variants of the gene of the row pass the
 current filters (useful for compound heterozygotes); it changes with the filters. In the filtered out
 variants it also counts those of the gene that pass. Variants without gene, consequence or region are kept (ticking "NA" in the lists).
