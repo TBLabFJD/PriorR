@@ -88,6 +88,13 @@ test_that("CNV genes match whole names and sample filter works", {
   expect_equal(out$Gene_name, "TP53,BRCA1")
   expect_equal(nrow(filter_cnv(cnv, cnv_params(min_acmg = 3, max_loss_af = 0.1))), 1)
   expect_equal(nrow(filter_cnv(cnv, cnv_params(region = c("exon", "NA")))), 2)
+  # the rows that pass and those that don't, as a table like the filtered one
+  kept <- filter_cnv(cnv, cnv_params(min_acmg = 3, columns = c("Gene_name", "ACMG_class")))
+  expect_false(".source_row" %in% names(kept))
+  expect_equal(attr(kept, "source_rows"), c(1L, 2L))
+  ex <- excluded_cnv(cnv, 3L, cnv_params(columns = c("ACMG_class", "Gene_name")))
+  expect_equal(ex$Gene_name, "BRCA1")
+  expect_equal(attr(ex, "display_columns"), c("ACMG_class", "Gene_name"))
 })
 
 test_that("CNV files without some columns (AnnotSV without N_PROGRAMS) are not emptied", {

@@ -525,6 +525,14 @@ The **CNV** tab opens the structural variant files of AnnotSV (`.tsv`) with **Op
   maximum frequency of benign gains / losses. By default nothing is filtered. A CNV passes a gene
   filter when any of its genes is in the list.
 - **Order by ACMG class and AnnotSV score** puts the most pathogenic CNVs first.
+- **Patient, pass / filtered out, columns:** like the SNVs. The header shows the sample chosen in
+  *Samples* (or the first one, "+ ..." for the others of the file). Above the table, how many rows
+  of the chosen samples and annotation mode pass the filters and how many are *filtered out* (click
+  to see them). Columns can be moved by dragging their header.
+- **Gene structure** (CNV information): each gene of the CNV (up to 6) with its exons at scale and the
+  CNV shaded (red DEL, blue DUP), e.g. "Deleted: exons 38–45 of 79" or "Duplicated: the whole gene".
+  The transcript is the one of the file (`Tx`, split rows) or the RefSeq one with more exons; exons from
+  the UCSC Genome Browser, kept in the shared folder.
 - **GLOWgenes ranking:** choose precomputed rankings (Orphanet, PanelApp, the lab's): the
   `GLOW_rank` column is the best rank of the genes of each CNV; order by it or keep only the CNVs
   with a gene up to a rank.

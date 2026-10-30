@@ -11,7 +11,10 @@ ui <- function(request) {
       leftUi = tagList(
         tags$li(class = "dropdown",
                 actionLink("open_help", "Help", icon = icon("question-circle"), style = "color: white;")),
-        tags$li(class = "dropdown", snv_patient_ui("snv"))),
+        # the patient of the tab in use
+        tags$li(class = "dropdown",
+                conditionalPanel("input.navbar != 'cnv'", style = "display: inline-block;", snv_patient_ui("snv")),
+                conditionalPanel("input.navbar == 'cnv'", style = "display: inline-block;", cnv_patient_ui("cnv")))),
       auth_header_ui("auth")),
 
     sidebar = shinydashboardPlus::dashboardSidebar(

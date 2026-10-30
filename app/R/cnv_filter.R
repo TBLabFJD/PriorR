@@ -11,6 +11,7 @@ cnv_params <- function(...) {
 
 filter_cnv <- function(df, p = cnv_params()) {
   DF <- df
+  DF$.source_row <- seq_len(nrow(DF))   # rows of df that pass (attribute "source_rows")
   has <- function(col) col %in% names(DF)
   num <- function(col) suppressWarnings(as.numeric(DF[[col]]))
   keep <- function(cond) DF[cond %in% TRUE, , drop = FALSE]
@@ -46,7 +47,16 @@ filter_cnv <- function(df, p = cnv_params()) {
 
   out <- as.data.frame(DF)
   rownames(out) <- NULL
+  source_rows <- out$.source_row
+  out$.source_row <- NULL
+  attr(out, "source_rows") <- source_rows
   columns <- if (is.null(p$columns)) names(out) else intersect(p$columns, names(out))
   attr(out, "display_columns") <- unique(c(intersect("GLOW_rank", names(out)), columns))
   out
+}
+
+# The CNVs that don't pass the filters as a table like the filtered one (same columns and GLOWgenes
+# rank, in the order of the file)
+excluded_cnv <- function(df, rows, p = cnv_params()) {
+  filter_cnv(df[rows, , drop = FALSE], cnv_params(columns = p$columns, glow_sources = p$glow_sources))
 }

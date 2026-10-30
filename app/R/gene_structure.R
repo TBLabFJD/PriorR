@@ -33,15 +33,15 @@ normalize_ucsc <- function(r) {
        cds_start = as.numeric(cds[1]), cds_end = as.numeric(cds[2]), exon_starts = starts, exon_ends = ends)
 }
 
-# Transcripts of UCSC that overlap a position (NULL without connection)
-ucsc_transcripts <- function(chrom, pos, build = genome_build()) {
+# Transcripts of UCSC that overlap a position, or a region up to `end` (NULL without connection)
+ucsc_transcripts <- function(chrom, pos, build = genome_build(), end = pos) {
   t <- ucsc_tracks(build)
   old <- options(timeout = 8)
   on.exit(options(old))
   out <- list()
   for (track in t$tracks) {
     url <- sprintf("https://api.genome.ucsc.edu/getData/track?genome=%s;track=%s;chrom=%s;start=%d;end=%d",
-                   t$genome, track, ucsc_chrom(chrom), as.integer(pos) - 1L, as.integer(pos))
+                   t$genome, track, ucsc_chrom(chrom), as.integer(pos) - 1L, as.integer(end))
     res <- tryCatch(jsonlite::fromJSON(url, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(res)) return(if (length(out)) out else NULL)
     out <- c(out, lapply(res[[track]], normalize_ucsc))
@@ -126,8 +126,9 @@ svg_text <- function(x, y, label, size = 12, anchor = "middle", color = "#37474f
           x, y, size, anchor, color, weight, htmltools::htmlEscape(label))
 
 # Drawing of the transcript in its own direction (5' left): exons at scale (thin UTR, thick coding
-# part), introns shortened (square root of their length) so the whole gene fits; the variant in red
-transcript_svg <- function(tx, pos, loc, width = 1000) {
+# part), introns shortened (square root of their length) so the whole gene fits; the variant in red.
+# For a CNV, `cnv` = list(start, end, type): its region shaded and its exons in red (DEL) / blue (DUP).
+transcript_svg <- function(tx, pos, loc, width = 1000, cnv = NULL) {
   n <- length(tx$exon_starts)
   minus <- tx$strand == "-"
   o <- if (minus) rev(seq_len(n)) else seq_len(n)
@@ -158,8 +159,8 @@ transcript_svg <- function(tx, pos, loc, width = 1000) {
   parts <- c(sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#90a4ae" stroke-width="2"/>', left, y, right, y))
   for (i in seq_len(n)) {
     xa <- gx(s[i]); xb <- gx(e[i]); if (xb < xa) { t <- xa; xa <- xb; xb <- t }
-    here <- identical(loc$region, "exon") && loc$number == i
-    fill <- if (here) "#e65100" else "#26a69a"
+    here <- if (!is.null(cnv)) i %in% loc$exons else identical(loc$region, "exon") && loc$number == i
+    fill <- if (!here) "#26a69a" else if (is.null(cnv)) "#e65100" else cnv_color(cnv$type)
     parts <- c(parts, sprintf('<rect x="%.1f" y="%d" width="%.1f" height="12" fill="%s"><title>Exon %d (%d bp)</title></rect>',
                               xa, y - 6, max(xb - xa, 1.5), fill, i, as.integer(e[i] - s[i])))
     # coding part, thicker
@@ -174,7 +175,7 @@ transcript_svg <- function(tx, pos, loc, width = 1000) {
   last_x <- -Inf
   for (i in seq_len(n)) {
     xm <- (gx(s[i]) + gx(e[i])) / 2
-    must <- i %in% c(1, n) || (identical(loc$region, "exon") && loc$number == i)
+    must <- i %in% c(1, n) || (identical(loc$region, "exon") && loc$number == i) || (length(loc$exons) && i %in% range(loc$exons))
     if (must || xm - last_x > 22) {
       parts <- c(parts, svg_text(xm, y + 30, i, size = 11, color = if (must) "#37474f" else "#78909c"))
       last_x <- xm
@@ -185,14 +186,74 @@ transcript_svg <- function(tx, pos, loc, width = 1000) {
     a <- gx(if (minus) e[j + 1] else e[j]); b <- gx(if (minus) s[j] else s[j + 1])
     parts <- c(parts, sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#e65100" stroke-width="4"/>', min(a, b), y, max(a, b), y))
   }
-  xv <- gx(pos - 1)
+  if (is.null(cnv)) {
+    xv <- gx(pos - 1)
+    parts <- c(parts,
+               sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#c62828" stroke-width="2"/>', xv, 10, xv, y + 14),
+               sprintf('<polygon points="%.1f,10 %.1f,0 %.1f,0" fill="#c62828"/>', xv, xv - 6, xv + 6))
+  } else {
+    xa <- gx(cnv$start - 1); xb <- gx(cnv$end); if (xb < xa) { t <- xa; xa <- xb; xb <- t }
+    parts <- c(sprintf('<rect x="%.1f" y="4" width="%.1f" height="%d" fill="%s" fill-opacity="0.15" stroke="%s" stroke-dasharray="4 3"/>',
+                       xa, max(xb - xa, 2), y + 14, cnv_color(cnv$type), cnv_color(cnv$type)), parts)
+  }
   parts <- c(parts,
-             sprintf('<line x1="%.1f" y1="%d" x2="%.1f" y2="%d" stroke="#c62828" stroke-width="2"/>', xv, 10, xv, y + 14),
-             sprintf('<polygon points="%.1f,10 %.1f,0 %.1f,0" fill="#c62828"/>', xv, xv - 6, xv + 6),
              svg_text(14, y + 5, "5′", size = 12, color = "#607d8b"),
              svg_text(width - 14, y + 5, "3′", size = 12, color = "#607d8b"))
   HTML(sprintf('<svg viewBox="0 0 %d 84" width="100%%" style="max-height: 110px; display: block;" role="img" aria-label="Exons of %s">%s</svg>',
                width, htmltools::htmlEscape(tx$name), paste(parts, collapse = "")))
+}
+
+cnv_color <- function(type) if (identical(toupper(type), "DUP")) "#1565c0" else "#c62828"
+
+# Exons of a transcript (numbered from 5') inside a CNV (1-based start / end)
+cnv_location <- function(tx, start, end) {
+  n <- length(tx$exon_starts)
+  o <- if (tx$strand == "-") rev(seq_len(n)) else seq_len(n)
+  s <- tx$exon_starts[o]; e <- tx$exon_ends[o]
+  exons <- which(e > start - 1 & s < end)
+  list(exons = exons, total = n, whole = start - 1 <= tx$tx_start && end >= tx$tx_end)
+}
+
+cnv_location_text <- function(loc, type) {
+  what <- if (identical(toupper(type), "DUP")) "Duplicated" else if (identical(toupper(type), "DEL")) "Deleted" else "Affected"
+  if (loc$whole) return(sprintf("%s: the whole gene (%d exons)", what, loc$total))
+  if (!length(loc$exons)) return(sprintf("Inside an intron or outside the exons (%d exons)", loc$total))
+  r <- range(loc$exons)
+  sprintf("%s: exon%s %s of %d (part of the gene)", what, if (r[1] == r[2]) "" else "s",
+          if (r[1] == r[2]) r[1] else paste0(r[1], "–", r[2]), loc$total)
+}
+
+# Transcript of each gene of a CNV: the one of the file (Tx) when given, otherwise the RefSeq NM_
+# with more exons of the gene. Kept in the cache by gene; NULL for a gene without data.
+cnv_gene_transcripts <- function(genes, chrom, start, end, tx_names = list(), build = genome_build(),
+                                 cache_dir = transcript_cache_dir(), fetch = ucsc_transcripts) {
+  gene_file <- function(g) file.path(cache_dir, build, paste0("gene_", gsub("[^A-Za-z0-9._-]", "_", g), ".json"))
+  out <- stats::setNames(vector("list", length(genes)), genes)
+  todo <- character(0)
+  for (g in genes) {
+    feature <- tx_names[[g]] %||% NA
+    if (!is.na(feature)) out[g] <- list(tryCatch(transcript_structure(feature, chrom, start, build, cache_dir, fetch), error = function(e) NULL))
+    if (is.null(out[[g]]) && file.exists(gene_file(g)))
+      out[g] <- list(tryCatch(jsonlite::fromJSON(gene_file(g), simplifyVector = TRUE), error = function(e) NULL))
+    if (is.null(out[[g]])) todo <- c(todo, g)
+  }
+  if (!length(todo) || (isTRUE(ucsc_offline$down) && difftime(Sys.time(), ucsc_offline$when, units = "mins") < 10)) return(out)
+  records <- fetch(chrom, start, build, end = end)
+  if (is.null(records)) {
+    ucsc_offline$down <- TRUE
+    ucsc_offline$when <- Sys.time()
+    return(out)
+  }
+  for (g in todo) {
+    mine <- Filter(function(r) identical(r$gene, g) && grepl("^N[MR]_", r$name), records)
+    if (!length(mine)) mine <- Filter(function(r) identical(r$gene, g), records)
+    if (!length(mine)) next
+    tx <- mine[[which.max(vapply(mine, function(r) length(r$exon_starts), 1))]]
+    out[g] <- list(tx)
+    dir.create(dirname(gene_file(g)), recursive = TRUE, showWarnings = FALSE)
+    tryCatch(jsonlite::write_json(tx, gene_file(g), auto_unbox = TRUE, digits = NA), error = function(e) NULL)
+  }
+  out
 }
 
 # Without coordinates: exons of the same size numbered, the exon or intron of the variant marked

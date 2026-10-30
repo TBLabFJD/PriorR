@@ -88,6 +88,7 @@ classifications shared by the lab, and the reads of each variant.</p>
       column can be hidden or moved; sorting keeps the previous order within ties; empty allele frequencies sort as 0;
       the column filters, search and order are kept when the table changes.</li>
   <li>The <b>patient</b> in the header; PriorR always opens at <code>http://127.0.0.1:8484</code>.</li>
+  <li><b>CNVs</b>: gene structure with the exons taken by the CNV, pass / filtered out, patient in the header and movable columns.</li>
 </ul></div>
 
 <div class="new" id="new"><b>What is new in PriorR 4.0</b>
@@ -316,18 +317,23 @@ from the computer; the reference genome comes from the IGV servers. <i>Open in I
 <p>The <b>CNV</b> tab opens AnnotSV files (fig. 17). Filters: samples, annotation mode (<i>full</i>: one row per CNV; <i>split</i>:
 one per gene), type, location, minimum ACMG class, number of programs, genes, panels, disease-specific genes, HPO and frequency of
 benign gains / losses. <b>GLOWgenes ranking</b> gives each CNV the best rank of its genes (<code>GLOW_rank</code>), to order or limit.
-The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 18).</p>
+The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 18).
+As in the SNVs, the header shows the patient (the sample chosen in <i>Samples</i>), the line above the table counts the CNVs that
+<b>pass</b> the filters and those <b>filtered out</b> (of the chosen samples and annotation mode; click to see them) and the columns can
+be moved by dragging their header. <b>Gene structure</b> draws each gene of the CNV (up to 6) with the CNV shaded, red for deletions
+and blue for duplications, and says which exons it takes (fig. 19).</p>
 <figure><img src="img/14_cnv.png"><figcaption>Figure 17. CNVs of the demo ordered by the GLOWgenes rank of their genes.</figcaption></figure>
 <figure><img src="img/15_cnv_info.png"><figcaption>Figure 18. CNV information.</figcaption></figure>
+<figure><img src="img/21_cnv_structure.png"><figcaption>Figure 19. Gene structure of a deletion of DMD exons 38–45 (synthetic multi-sample CNV table with public gene coordinates).</figcaption></figure>
 
 <h2 id="users" class="break">18. Users, groups and sessions</h2>
-<p><b>Users and groups</b> (administrators, fig. 19): create users, change passwords, deactivate users, make administrators,
+<p><b>Users and groups</b> (administrators, fig. 20): create users, change passwords, deactivate users, make administrators,
 create groups and assign members. Members of a group see the comments shared with their groups. From the command line,
 <code>Rscript Program_files/scripts/priorr_admin.R reset-password &lt;user&gt;</code> resets a password.
 <b>Saved sessions</b> keeps an analysis (file, profile, filters, columns, BAM files) to open it again later, also from another computer.</p>
-<figure><img src="img/17_users.png"><figcaption>Figure 19. Users and groups.</figcaption></figure>
-<p>The <b>Help</b> tab (fig. 20) has the complete documentation and the configuration of the computer.</p>
-<figure><img src="img/16_help.png"><figcaption>Figure 20. In-app Help.</figcaption></figure>
+<figure><img src="img/17_users.png"><figcaption>Figure 20. Users and groups.</figcaption></figure>
+<p>The <b>Help</b> tab (fig. 21) has the complete documentation and the configuration of the computer.</p>
+<figure><img src="img/16_help.png"><figcaption>Figure 21. In-app Help.</figcaption></figure>
 
 <h2 id="resources">19. Updating the resources</h2>
 <p>From the <code>app/</code> folder (they need internet):</p>

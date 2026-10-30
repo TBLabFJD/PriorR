@@ -56,3 +56,32 @@ test_that("drawings: at scale with the variant, or schematic from EXON / INTRON"
   expect_match(as.character(schematic_svg("-", "2/9")), "<svg")
   expect_null(schematic_svg("-", "-"))
 })
+
+test_that("CNVs: exons of the gene inside the CNV, and the transcript of each gene", {
+  # plus strand exons 101-200, 301-400, 501-600: a deletion of 250-450 takes exon 2
+  loc <- cnv_location(plus, 250, 450)
+  expect_equal(loc$exons, 2L)
+  expect_false(loc$whole)
+  expect_equal(cnv_location_text(loc, "DEL"), "Deleted: exon 2 of 3 (part of the gene)")
+  expect_equal(cnv_location(minus, 250, 450)$exons, 2L)
+  expect_equal(cnv_location(minus, 150, 450)$exons, 2:3)   # minus strand: exon 3 is the first of the genome
+  expect_match(cnv_location_text(cnv_location(plus, 50, 700), "DUP"), "Duplicated: the whole gene \\(3 exons\\)")
+  expect_match(cnv_location_text(cnv_location(plus, 210, 290), "DEL"), "Inside an intron")
+  svg <- as.character(transcript_svg(plus, 250, loc, cnv = list(start = 250, end = 450, type = "DEL")))
+  expect_match(svg, "fill-opacity")
+  expect_match(svg, "#c62828")
+
+  dir <- tempfile()
+  rm(list = ls(ucsc_offline), envir = ucsc_offline)
+  calls <- 0
+  other <- modifyList(plus, list(name = "NM_000009.1", gene = "GENE1", exon_starts = 100, exon_ends = 600))
+  fetch <- function(chrom, pos, build, end = pos) { calls <<- calls + 1; list(other, plus, modifyList(plus, list(name = "XM_1", gene = "GENE2"))) }
+  txs <- cnv_gene_transcripts(c("GENE1", "GENE2", "GENE3"), "1", 250, 450, cache_dir = dir, fetch = fetch)
+  expect_equal(txs$GENE1$name, "NM_000001.2")   # the NM_ with more exons
+  expect_equal(txs$GENE2$name, "XM_1")          # no NM_: another one
+  expect_null(txs$GENE3)
+  txs <- cnv_gene_transcripts(c("GENE1", "GENE2"), "1", 250, 450, cache_dir = dir, fetch = fetch)
+  expect_equal(calls, 1)                         # kept by gene
+  expect_equal(txs$GENE1$exon_ends, c(200, 400, 600))
+  rm(list = ls(ucsc_offline), envir = ucsc_offline)
+})

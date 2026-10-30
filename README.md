@@ -18,6 +18,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
   search and the order are kept when the table changes.
 - The patient (samples of the file) in the header; rows of the file and of the load filters above the table.
 - PriorR always opens at `http://127.0.0.1:8484` (so *Remember me* works).
+- **CNVs**: gene structure with the exons taken by each CNV (red deletions, blue duplications), pass /
+  filtered out, the patient in the header and movable columns.
 
 ## What's new in 4.0
 
