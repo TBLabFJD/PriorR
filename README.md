@@ -8,7 +8,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
 ## What's new in 4.2
 
 - 4.2.1: the table of exons of the transcripts is read without the R.utils package (in 4.2 its download
-  failed on computers without it).
+  failed on computers without it); the Docker image is based on `rocker/r-ver` (minimal, no conda, no
+  compilers, system libraries updated) and runs PriorR as a user without privileges.
 
 - **Variant information**: the panels of the library with the gene, and the other variants of the gene in the
   sample with their parental origin (compound heterozygotes).
@@ -95,11 +96,17 @@ docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/varia
 ```
 
 Then open `http://<server>:8888` (serve it behind HTTPS). `/var/priorr` keeps the users, comments, profiles,
-sessions and the cache; `/data` is what "Open file" shows. Optional, once: AlphaMissense
-(`docker exec priorr Rscript Program_files/scripts/get_alphamissense.R`); the exons of the transcripts are
-downloaded automatically the first time (or `docker exec priorr Rscript Program_files/scripts/get_transcripts.R`). The image (Docker Hub
-`tblabfjd/priorr`, tags `4.2`, `4.1`, `4.0` and `latest`) is built by `.github/workflows/docker.yml`
-for each release tag; to build it yourself: `docker build -t priorr .`
+projects, sessions and the caches; `/data` is what "Open file" shows (the files must be readable by everybody:
+PriorR runs as the user `priorr` of the image, not root; a volume of an older image is given to it when it starts).
+Optional, once: AlphaMissense (`docker exec -u priorr priorr Rscript Program_files/scripts/get_alphamissense.R`);
+the exons of the transcripts are downloaded automatically the first time (or
+`docker exec -u priorr priorr Rscript Program_files/scripts/get_transcripts.R`).
+
+The image (Docker Hub `tblabfjd/priorr`, the version tags and `latest`) is R on a minimal Ubuntu
+(`rocker/r-ver`) with the system libraries updated when it is built and without compilers; it is built by
+`.github/workflows/docker.yml` for each release tag (to build it yourself: `docker build -t priorr .`). Docker Hub
+lists the known vulnerabilities of the system libraries of the image: build a new release now and then to get
+their fixes.
 
 ## Using it
 
