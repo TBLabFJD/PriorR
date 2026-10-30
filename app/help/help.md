@@ -382,11 +382,13 @@ parents it warns of a compound heterozygote (in trans).
 or ENST of Ensembl) from 5′ to 3′, with the variant in red and its exon or intron in orange: exons at
 scale (the coding part thicker, the UTRs thinner), introns shortened so the whole gene fits. Below,
 the exon or intron and the distance to its borders in bp (e.g. "Intron 6 of 22 (4,241 bp): 122 bp
-after exon 6, 4,120 bp before exon 7"), useful for splicing. The exons come from the UCSC Genome
-Browser the first time a transcript is seen (only the name of the transcript and the position are
-sent) and are kept in `shared/annotations/transcripts` for everybody. When the version of the
-file is not there, another version of the transcript is used (it says so). Without internet or for
-an unknown transcript, a schematic drawing with the `EXON` / `INTRON` columns of the file.
+after exon 6, 4,120 bp before exon 7"), useful for splicing. The exons come from the RefSeq and
+GENCODE tables of the UCSC Genome Browser, downloaded once for the whole lab into
+`shared/annotations/transcripts_GRCh38.parquet` (~30 MB, a minute; PriorR starts it in the background
+the first time; by hand: `Rscript Program_files/scripts/get_transcripts.R` from `app/`): nothing is
+asked per variant and it works without internet. When the version of the file is not there, another
+version of the transcript is used (it says so). Until the table is downloaded, or for a transcript
+that is not in it, a schematic drawing with the `EXON` / `INTRON` columns of the file.
 
 Selecting a row shows the impact of the variant (the `IMPACT` column of VEP when the file has it;
 otherwise PriorR derives it from the consequence: HIGH = stop, frameshift, canonical splice site,
@@ -542,7 +544,7 @@ The **CNV** tab opens the structural variant files of AnnotSV (`.tsv`) with **Op
 - **Gene structure** (CNV information): one line with the region of the CNV at genomic scale, its genes
   and their exons, the CNV shaded (red DEL, blue DUP) and the exons inside it in that color; below, e.g.
   "DMD: exons 38–45 of 79 · PMP22: whole gene". The transcript is the one of the file (`Tx`, split
-  rows) or the RefSeq one with more exons; exons from the UCSC Genome Browser, kept in the shared folder.
+  rows) or the RefSeq one with more exons; exons from the same table of the shared folder.
 - **GLOWgenes ranking:** choose precomputed rankings (Orphanet, PanelApp, the lab's): the
   `GLOW_rank` column is the best rank of the genes of each CNV; order by it or keep only the CNVs
   with a gene up to a rank.
@@ -574,6 +576,9 @@ The changes in these files are seen when PriorR is opened again.
 
 <h2 id="troubleshooting">Troubleshooting</h2>
 
+- **No gene structure drawing (only the schematic one):** the table of transcripts is downloaded the
+  first time (internet, a minute); if it can't be downloaded the card says why. By hand:
+  `Rscript Program_files/scripts/get_transcripts.R` (from `app/`).
 - **"Maximum upload size exceeded":** don't upload big files; open them with *Open variant file*.
 - **The first load of a genome is slow:** it is normal (it prepares the cache); the next ones are fast.
 - **"N rows pass the load filters, more than the safety limit":** above `max_rows` (`priorr.cfg`,
@@ -600,5 +605,6 @@ The changes in these files are seen when PriorR is opened again.
 - GLOWgenes rankings of PanelApp panels, disease-specific genes and SGDS: Benítez Y, Uría-Regojo G, Mínguez P. A global survey of systems biology-based predictions of gene-rare disease associations to enhance new diagnoses. Sci Rep 2026. doi:10.1038/s41598-026-54510-3.
 - RetiGene: Am J Hum Genet 2025;112(10):2253-2265. AlphaMissense: Cheng J et al., Science 2023.
   ClinVar: Landrum MJ et al., Nucleic Acids Res 2018. gnomAD v4.1. Human Phenotype Ontology.
+- Exons of the transcripts: RefSeq (NCBI) and GENCODE tables of the UCSC Genome Browser (https://genome.ucsc.edu).
 - ACMG/AMP: Richards S et al., Genet Med 2015; Tavtigian SV et al., Hum Mutat 2020; Pejaver V et al., Am J
   Hum Genet 2022; Walker LC et al., Am J Hum Genet 2023.

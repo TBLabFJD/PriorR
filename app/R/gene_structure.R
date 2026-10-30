@@ -1,90 +1,122 @@
 # Exon / intron structure of the transcript of a variant (Variant information > Gene structure).
-# The exons of a transcript (NM_ / NR_ of RefSeq, ENST of Ensembl) come from the UCSC Genome Browser
-# API the first time (only the name of the transcript and the position are sent) and are kept in the
-# shared folder for everybody. Without them (no internet, unknown transcript) the EXON / INTRON
-# columns of the file give a schematic drawing.
+# The exons of the transcripts (RefSeq NM_ / NR_ / XM_ / XR_ and Ensembl ENST of GENCODE) come from
+# the tables of the UCSC Genome Browser, downloaded once into the shared folder for the whole lab
+# (scripts/get_transcripts.R, started in the background the first time they are needed): no
+# request per variant. Until then (or without internet) the EXON / INTRON columns of the file give a
+# schematic drawing.
 
-transcript_cache_dir <- function() file.path(shared_dir, "annotations", "transcripts")
-
-ucsc_tracks <- function(build = genome_build()) {
-  if (build == "GRCh37") list(genome = "hg19", tracks = c("ncbiRefSeq", "wgEncodeGencodeCompV19"))
-  else list(genome = "hg38", tracks = c("ncbiRefSeq", "knownGene"))
+ucsc_tables <- function(build = genome_build()) {
+  if (build == "GRCh37") list(genome = "hg19", tables = c("ncbiRefSeq", "wgEncodeGencodeCompV19"))
+  else list(genome = "hg38", tables = c("ncbiRefSeq", "knownGene"))
 }
+transcript_db_path <- function(build = genome_build()) file.path(shared_dir, "annotations", paste0("transcripts_", build, ".parquet"))
 
 ucsc_chrom <- function(chrom) {
   chrom <- sub("^chr", "", as.character(chrom))
   paste0("chr", if (chrom %in% c("M", "MT")) "M" else chrom)
 }
 
-# One transcript of the UCSC API (genePred of ncbiRefSeq / GENCODE, or bigGenePred of knownGene) as
-# list(name, gene, chrom, strand, tx_start, tx_end, cds_start, cds_end, exon_starts, exon_ends)
-# with 0-based starts and 1-based ends (BED-like), in genomic order
+# One transcript (a row of a genePred table) as list(name, gene, chrom, strand, tx_start, tx_end,
+# cds_start, cds_end, exon_starts, exon_ends) with 0-based starts and 1-based ends, in genomic order
 normalize_ucsc <- function(r) {
   nums <- function(x) as.numeric(strsplit(sub(",$", "", as.character(x)), ",", fixed = TRUE)[[1]])
-  if (!is.null(r$exonStarts)) {
-    starts <- nums(r$exonStarts); ends <- nums(r$exonEnds)
-    tx <- c(r$txStart, r$txEnd); cds <- c(r$cdsStart, r$cdsEnd); gene <- r$name2
-  } else {
-    starts <- r$chromStart + nums(r$chromStarts); ends <- starts + nums(r$blockSizes)
-    tx <- c(r$chromStart, r$chromEnd); cds <- c(r$thickStart, r$thickEnd); gene <- r$geneName
-  }
-  list(name = as.character(r$name), gene = as.character(gene %||% ""), chrom = as.character(r$chrom),
-       strand = as.character(r$strand), tx_start = as.numeric(tx[1]), tx_end = as.numeric(tx[2]),
-       cds_start = as.numeric(cds[1]), cds_end = as.numeric(cds[2]), exon_starts = starts, exon_ends = ends)
+  list(name = as.character(r$name), gene = as.character(r$name2 %||% ""), chrom = as.character(r$chrom),
+       strand = as.character(r$strand), tx_start = as.numeric(r$txStart), tx_end = as.numeric(r$txEnd),
+       cds_start = as.numeric(r$cdsStart), cds_end = as.numeric(r$cdsEnd),
+       exon_starts = nums(r$exonStarts), exon_ends = nums(r$exonEnds))
 }
 
-# Transcripts of UCSC that overlap a position, or a region up to `end` (NULL without connection)
-ucsc_transcripts <- function(chrom, pos, build = genome_build(), end = pos) {
-  t <- ucsc_tracks(build)
-  old <- options(timeout = 8)
+# A genePred table of UCSC: ncbiRefSeq and GENCODE (16 columns: bin first, gene in name2) or
+# knownGene (12 columns, without gene)
+read_genepred <- function(path) {
+  df <- data.table::fread(path, header = FALSE, sep = "\t", quote = "", colClasses = "character", data.table = FALSE)
+  if (ncol(df) >= 16) df <- df[, -1]
+  data.frame(name = df[[1]], base = sub("\\.[0-9]+$", "", df[[1]]), chrom = df[[2]], strand = df[[3]],
+             txStart = as.numeric(df[[4]]), txEnd = as.numeric(df[[5]]), cdsStart = as.numeric(df[[6]]),
+             cdsEnd = as.numeric(df[[7]]), exonStarts = df[[9]], exonEnds = df[[10]],
+             name2 = if (ncol(df) >= 15) df[[12]] else "", stringsAsFactors = FALSE)
+}
+
+# Downloads the transcript tables of UCSC for a genome build and writes the Parquet of the shared
+# folder (scripts/get_transcripts.R)
+build_transcript_db <- function(build = genome_build(), out = transcript_db_path(build)) {
+  t <- ucsc_tables(build)
+  old <- options(timeout = 900)
   on.exit(options(old))
-  out <- list()
-  for (track in t$tracks) {
-    url <- sprintf("https://api.genome.ucsc.edu/getData/track?genome=%s;track=%s;chrom=%s;start=%d;end=%d",
-                   t$genome, track, ucsc_chrom(chrom), as.integer(pos) - 1L, as.integer(end))
-    res <- tryCatch(jsonlite::fromJSON(url, simplifyVector = FALSE), error = function(e) NULL)
-    if (is.null(res)) return(if (length(out)) out else NULL)
-    out <- c(out, lapply(res[[track]], normalize_ucsc))
+  parts <- lapply(t$tables, function(table) {
+    tmp <- tempfile(fileext = ".txt.gz")
+    on.exit(unlink(tmp))
+    utils::download.file(sprintf("https://hgdownload.soe.ucsc.edu/goldenPath/%s/database/%s.txt.gz", t$genome, table),
+                         tmp, mode = "wb", quiet = TRUE)
+    read_genepred(tmp)
+  })
+  write_transcript_db(do.call(rbind, parts), out)
+}
+
+write_transcript_db <- function(df, out) {
+  dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
+  con <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  duckdb::duckdb_register(con, "t", df)
+  tmp <- paste0(out, ".tmp", Sys.getpid())
+  DBI::dbExecute(con, sprintf("COPY (SELECT * FROM t ORDER BY base) TO %s (FORMAT parquet, COMPRESSION zstd)", sql_str(tmp)))
+  file.rename(tmp, out)
+}
+
+# Is the table of transcripts there? If not, it is downloaded in the background (once; the state
+# in <table>.downloading / <table>.error). Returns "ready", "downloading" or "error: <message>".
+transcript_db_state <- function(build = genome_build(), start = TRUE) {
+  db <- transcript_db_path(build)
+  if (file.exists(db)) return("ready")
+  lock <- paste0(db, ".downloading")
+  err <- paste0(db, ".error")
+  if (file.exists(lock)) {
+    l <- tryCatch(jsonlite::fromJSON(lock), error = function(e) list())
+    if (process_alive(l$pid)) return("downloading")
+    unlink(lock)
   }
-  out
+  if (file.exists(err) && difftime(Sys.time(), file.info(err)$mtime, units = "mins") < 30)
+    return(paste("error:", paste(readLines(err, warn = FALSE), collapse = " ")))
+  if (!start) return("missing")
+  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
+  script <- file.path(data_dir, "scripts", "get_transcripts.R")
+  system2(file.path(R.home("bin"), "Rscript"), c(shQuote(normalizePath(script)), build),
+          stdout = paste0(db, ".log"), stderr = paste0(db, ".log"), wait = FALSE)
+  "downloading"
 }
 
-# The transcript (Feature of the file) with the same version, or another version of it
-pick_transcript <- function(records, feature) {
-  base <- function(x) sub("\\.[0-9]+$", "", x)
-  names <- vapply(records, `[[`, "", "name")
-  i <- match(feature, names)
-  if (is.na(i)) i <- match(base(feature), base(names))
-  if (is.na(i)) NULL else records[[i]]
+# Why there is no drawing at scale (state of transcript_db_state)
+transcript_db_note <- function(state, feature = NA) {
+  if (identical(state, "downloading")) "the exon coordinates of the transcripts are being downloaded (once for the lab, ~30 MB, a minute or two)."
+  else if (startsWith(state %||% "", "error")) paste("the exon coordinates could not be downloaded:", sub("^error: ", "", state))
+  else sprintf("the transcript %s is not in the RefSeq / GENCODE tables of UCSC.", if (is.na(feature) || feature == "-") "" else feature)
 }
 
-# Exons of a transcript: from the cache of the shared folder, or from UCSC (then cached). Not
-# found or no connection: NULL (and, without connection, it isn't asked again in this session).
-ucsc_offline <- new.env()
-transcript_structure <- function(feature, chrom, pos, build = genome_build(), cache_dir = transcript_cache_dir(),
-                                 fetch = ucsc_transcripts) {
+# Rows of the table of transcripts (a SQL condition on name, base, name2, chrom)
+transcript_rows <- function(where, db) {
+  con <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  DBI::dbGetQuery(con, sprintf("SELECT * FROM read_parquet(%s) WHERE %s", sql_str(db), where))
+}
+
+# Exons of the transcript of the file (Feature): the same version, or another version of it, on the
+# chromosome of the variant. NULL when it is not in the table (or the table is not there yet).
+transcript_memo <- new.env()
+transcript_structure <- function(feature, chrom, pos, build = genome_build(), db = transcript_db_path(build)) {
   if (is.null(feature) || is.na(feature) || !grepl("^(N[MR]_|X[MR]_|ENST)", feature)) return(NULL)
-  file <- file.path(cache_dir, build, paste0(gsub("[^A-Za-z0-9._-]", "_", feature), ".json"))
-  if (file.exists(file)) {
-    tx <- tryCatch(jsonlite::fromJSON(file, simplifyVector = TRUE), error = function(e) NULL)
-    if (!is.null(tx) && length(tx$exon_starts)) return(tx)
+  key <- paste(db, feature, ucsc_chrom(chrom))
+  if (exists(key, envir = transcript_memo, inherits = FALSE)) return(get(key, envir = transcript_memo))
+  if (!file.exists(db)) return(NULL)
+  rows <- transcript_rows(sprintf("base = %s AND chrom = %s", sql_str(sub("\\.[0-9]+$", "", feature)), sql_str(ucsc_chrom(chrom))), db)
+  tx <- NULL
+  if (nrow(rows)) {
+    same <- rows[rows$name == feature, , drop = FALSE]
+    if (!nrow(same)) same <- rows[order(-suppressWarnings(as.numeric(sub("^.*\\.", "", rows$name)))), , drop = FALSE]
+    # the copy nearest to the variant (a few transcripts are in two places)
+    same <- same[order(pmax(same$txStart - pos, pos - same$txEnd, 0)), , drop = FALSE]
+    tx <- normalize_ucsc(as.list(same[1, ]))
   }
-  if (isTRUE(ucsc_offline$down) && difftime(Sys.time(), ucsc_offline$when, units = "mins") < 10) return(NULL)
-  records <- fetch(chrom, pos, build)
-  if (is.null(records)) {
-    ucsc_offline$down <- TRUE
-    ucsc_offline$when <- Sys.time()
-    return(NULL)
-  }
-  tx <- pick_transcript(records, feature)
-  if (!is.null(tx)) {
-    dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
-    tmp <- paste0(file, ".tmp", Sys.getpid())
-    tryCatch({
-      jsonlite::write_json(tx, tmp, auto_unbox = TRUE, digits = NA)
-      file.rename(tmp, file)
-    }, error = function(e) unlink(tmp))
-  }
+  assign(key, tx, envir = transcript_memo)
   tx
 }
 
@@ -207,34 +239,20 @@ cnv_location <- function(tx, start, end) {
 }
 
 # Transcript of each gene of a CNV: the one of the file (Tx) when given, otherwise the RefSeq NM_
-# with more exons of the gene. Kept in the cache by gene; NULL for a gene without data.
+# with more exons of the gene (on the chromosome of the CNV). NULL for a gene without data.
 cnv_gene_transcripts <- function(genes, chrom, start, end, tx_names = list(), build = genome_build(),
-                                 cache_dir = transcript_cache_dir(), fetch = ucsc_transcripts) {
-  gene_file <- function(g) file.path(cache_dir, build, paste0("gene_", gsub("[^A-Za-z0-9._-]", "_", g), ".json"))
+                                 db = transcript_db_path(build)) {
   out <- stats::setNames(vector("list", length(genes)), genes)
-  todo <- character(0)
+  if (!length(genes) || !file.exists(db)) return(out)
+  rows <- transcript_rows(sprintf("name2 IN (%s) AND chrom = %s", paste(sql_str(genes), collapse = ", "), sql_str(ucsc_chrom(chrom))), db)
   for (g in genes) {
     feature <- tx_names[[g]] %||% NA
-    if (!is.na(feature)) out[g] <- list(tryCatch(transcript_structure(feature, chrom, start, build, cache_dir, fetch), error = function(e) NULL))
-    if (is.null(out[[g]]) && file.exists(gene_file(g)))
-      out[g] <- list(tryCatch(jsonlite::fromJSON(gene_file(g), simplifyVector = TRUE), error = function(e) NULL))
-    if (is.null(out[[g]])) todo <- c(todo, g)
-  }
-  if (!length(todo) || (isTRUE(ucsc_offline$down) && difftime(Sys.time(), ucsc_offline$when, units = "mins") < 10)) return(out)
-  records <- fetch(chrom, start, build, end = end)
-  if (is.null(records)) {
-    ucsc_offline$down <- TRUE
-    ucsc_offline$when <- Sys.time()
-    return(out)
-  }
-  for (g in todo) {
-    mine <- Filter(function(r) identical(r$gene, g) && grepl("^N[MR]_", r$name), records)
-    if (!length(mine)) mine <- Filter(function(r) identical(r$gene, g), records)
-    if (!length(mine)) next
-    tx <- mine[[which.max(vapply(mine, function(r) length(r$exon_starts), 1))]]
-    out[g] <- list(tx)
-    dir.create(dirname(gene_file(g)), recursive = TRUE, showWarnings = FALSE)
-    tryCatch(jsonlite::write_json(tx, gene_file(g), auto_unbox = TRUE, digits = NA), error = function(e) NULL)
+    mine <- rows[rows$name2 == g, , drop = FALSE]
+    if (!is.na(feature) && any(mine$base == sub("\\.[0-9]+$", "", feature))) mine <- mine[mine$base == sub("\\.[0-9]+$", "", feature), , drop = FALSE]
+    else if (any(grepl("^N[MR]_", mine$name))) mine <- mine[grepl("^N[MR]_", mine$name), , drop = FALSE]
+    if (!nrow(mine)) next
+    n_exons <- lengths(strsplit(mine$exonStarts, ",", fixed = TRUE))
+    out[g] <- list(normalize_ucsc(as.list(mine[which.max(n_exons), ])))
   }
   out
 }

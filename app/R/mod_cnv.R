@@ -276,12 +276,15 @@ cnv_server <- function(id, user) {
       # the transcript of the file (split rows of AnnotSV: Tx) for its gene
       tx_names <- if (!is.na(value("Tx")) && length(genes) == 1) stats::setNames(list(sub("\\..*$", "", value("Tx"))), genes) else list()
       txs <- Filter(Negate(is.null), cnv_gene_transcripts(genes, value("SV_chrom"), start, end, tx_names))
-      if (!length(txs)) return(helpText("No exon data for the genes of this CNV (no connection or unknown genes)."))
+      if (!length(txs)) {
+        state <- transcript_db_state()
+        return(helpText(if (identical(state, "ready")) "No exon data for the genes of this CNV." else paste("No drawing yet:", transcript_db_note(state))))
+      }
       type <- value("SV_type")
       tagList(cnv_region_svg(txs, start, end, type),
               div(class = "pr-structure-text", cnv_genes_text(txs, start, end)),
               helpText(style = "margin: 2px 0 0 0;", "Genomic scale; the CNV shaded and its exons in",
-                       sprintf("%s. Exons from the UCSC Genome Browser (%s).", if (identical(toupper(type), "DUP")) "blue" else "red", genome_build())))
+                       sprintf("%s. Exons from the UCSC Genome Browser tables (%s).", if (identical(toupper(type), "DUP")) "blue" else "red", genome_build())))
     })
 
     output$download <- downloadHandler(

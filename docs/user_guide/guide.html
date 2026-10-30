@@ -267,8 +267,9 @@ GTEx, UniProt, VarSome, SpliceAI Lookup, UCSC...); ACMG criteria and comments.</
 <figure><img src="img/08_variant_info.png"><figcaption>Figure 9. Variant information of a stop variant of CNGB3 in the demo trio.</figcaption></figure>
 <p><b>Gene structure</b> (fig. 10) draws the transcript of the row from 5′ to 3′: exons at scale (coding part thicker, UTRs
 thinner), introns shortened, the variant in red and its exon or intron in orange, with the distance to its borders in bp (useful
-for splicing). The exons come from the UCSC Genome Browser the first time a transcript is seen (only its name and the position
-are sent) and are kept in the shared folder; without internet, a schematic drawing with the EXON / INTRON columns.</p>
+for splicing). The exons come from the RefSeq and GENCODE tables of the UCSC Genome Browser, downloaded once for the whole lab into
+the shared folder (~30 MB, started automatically the first time); then it works without internet. Until then, a schematic drawing
+with the EXON / INTRON columns.</p>
 <p><b>Gene in panels</b> lists the panels of the library with the gene (PanelApp genes in green, amber or red), whether it is in
 the genes of the chosen HPO terms, and GLOWgenes and SGDS. <b>Other variants of the gene in this sample</b> lists the other variants
 of the gene that pass the filters with their genotypes; with a family (trio or PED) it says from which parent each one comes and
@@ -360,7 +361,8 @@ links), <code>glowgenes.json</code> (filters of the GLOWgenes view).</p>
 <ul>
   <li><b>The address of PriorR:</b> <code>http://127.0.0.1:8484</code>; when a second PriorR is open, the next port (8485...).</li>
   <li><b>A project counts nothing:</b> check in <i>Manage projects</i> that its files are <i>indexed</i> (not pending or not found).</li>
-  <li><b>No gene structure drawing:</b> the transcript (Feature) must be a RefSeq NM_ / NR_ or Ensembl ENST, and the first time internet is needed.</li>
+  <li><b>No gene structure drawing:</b> the transcript (Feature) must be a RefSeq (NM_, NR_, XM_, XR_) or Ensembl ENST one; the first time the table of
+      transcripts is downloaded (internet, a minute). By hand: <code>Rscript Program_files/scripts/get_transcripts.R</code> from <code>app/</code>.</li>
   <li><b>The first load of a genome is slow:</b> it prepares a cache; the next loads take seconds.</li>
   <li><b>I don't see the comments of a colleague:</b> check that you share a group and that the comment is not private.</li>
   <li><b>Each computer sees different users:</b> they don't use the same shared folder (see Help &gt; configuration).</li>

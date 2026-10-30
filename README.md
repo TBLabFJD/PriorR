@@ -17,7 +17,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
   background; each variant says in how many other samples of the project it is (and homozygous), with a
   filter by that number and the list of samples in the variant information.
 - **Gene structure**: exons and introns of the transcript with the variant at scale, and its exon / intron
-  and distance to the borders (exons from the UCSC Genome Browser, kept in the shared folder).
+  and distance to the borders (RefSeq and GENCODE exons of the UCSC Genome Browser, downloaded once into the
+  shared folder).
 - **Table**: links to the variants that pass the filters and to those filtered out; *Var. in gene* (variants
   of the gene that pass); any column can be hidden and moved by dragging its header; sorting by a column keeps
   the previous order within ties and empty allele frequencies sort as 0; the filters of the columns, the
@@ -92,7 +93,8 @@ docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/varia
 
 Then open `http://<server>:8888` (serve it behind HTTPS). `/var/priorr` keeps the users, comments, profiles,
 sessions and the cache; `/data` is what "Open file" shows. Optional, once: AlphaMissense
-(`docker exec priorr Rscript Program_files/scripts/get_alphamissense.R`). The image (Docker Hub
+(`docker exec priorr Rscript Program_files/scripts/get_alphamissense.R`); the exons of the transcripts are
+downloaded automatically the first time (or `docker exec priorr Rscript Program_files/scripts/get_transcripts.R`). The image (Docker Hub
 `tblabfjd/priorr`, tags `4.2`, `4.1`, `4.0` and `latest`) is built by `.github/workflows/docker.yml`
 for each release tag; to build it yourself: `docker build -t priorr .`
 

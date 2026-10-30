@@ -4,13 +4,28 @@ plus <- list(name = "NM_000001.2", gene = "GENE1", chrom = "chr1", strand = "+",
              cds_start = 150, cds_end = 550, exon_starts = c(100, 300, 500), exon_ends = c(200, 400, 600))
 minus <- modifyList(plus, list(name = "ENST00000000001.3", strand = "-"))
 
-test_that("UCSC records of RefSeq (genePred) and GENCODE (bigGenePred) give the same structure", {
-  refseq <- normalize_ucsc(list(name = "NM_000001.2", name2 = "GENE1", chrom = "chr1", strand = "+", txStart = 100, txEnd = 600,
-                                cdsStart = 150, cdsEnd = 550, exonStarts = "100,300,500,", exonEnds = "200,400,600,"))
-  expect_equal(refseq, plus)
-  gencode <- normalize_ucsc(list(name = "NM_000001.2", geneName = "GENE1", chrom = "chr1", strand = "+", chromStart = 100,
-                                 chromEnd = 600, thickStart = 150, thickEnd = 550, blockSizes = "100,100,100,", chromStarts = "0,200,400,"))
-  expect_equal(gencode, plus)
+# a small table of transcripts like the ones of UCSC: RefSeq (16 columns, gene in name2) and GENCODE
+# knownGene (12 columns, without gene)
+fake_transcript_db <- function() {
+  dir <- tempfile(); dir.create(dir)
+  refseq <- file.path(dir, "ncbiRefSeq.txt.gz"); known <- file.path(dir, "knownGene.txt.gz")
+  rs <- c("585\tNM_000001.2\tchr1\t+\t100\t600\t150\t550\t3\t100,300,500,\t200,400,600,\t0\tGENE1\tcmpl\tcmpl\t0,0,0,",
+          "585\tNM_000009.1\tchr1\t+\t100\t600\t150\t550\t1\t100,\t600,\t0\tGENE1\tcmpl\tcmpl\t0,",
+          "585\tXM_000002.1\tchr1\t+\t2000\t2600\t2000\t2600\t2\t2000,2500,\t2100,2600,\t0\tGENE2\tcmpl\tcmpl\t0,0,",
+          "585\tNM_000001.2\tchr1_KI270706v1_random\t+\t100\t600\t150\t550\t3\t100,300,500,\t200,400,600,\t0\tGENE1\tcmpl\tcmpl\t0,0,0,")
+  writeLines(rs, gz <- gzfile(refseq)); close(gz)
+  writeLines("ENST00000000001.3\tchr1\t-\t100\t600\t150\t550\t3\t100,300,500,\t200,400,600,\t\tuc001.1", gz <- gzfile(known)); close(gz)
+  db <- file.path(dir, "transcripts_GRCh38.parquet")
+  write_transcript_db(rbind(read_genepred(refseq), read_genepred(known)), db)
+  db
+}
+
+test_that("the RefSeq and GENCODE tables of UCSC give the same structure", {
+  db <- fake_transcript_db()
+  rm(list = ls(transcript_memo), envir = transcript_memo)
+  expect_equal(transcript_structure("NM_000001.2", "1", 150, db = db), plus)
+  expect_equal(transcript_structure("ENST00000000001.3", "chr1", 150, db = db)[c("strand", "exon_starts")], list(strand = "-", exon_starts = c(100, 300, 500)))
+  expect_equal(transcript_structure("ENST00000000001.3", "chr1", 150, db = db)$gene, "")
 })
 
 test_that("location of the variant in the order of the transcript, with distances to the borders", {
@@ -28,22 +43,17 @@ test_that("location of the variant in the order of the transcript, with distance
   expect_match(location_text(variant_location(plus, 250)), "Intron 1 of 2 \\(100 bp\\): 50 bp after exon 1, 51 bp before exon 2")
 })
 
-test_that("exons are asked once and kept in the cache; another version of the transcript is used", {
-  dir <- tempfile()
-  calls <- 0
-  fetch <- function(chrom, pos, build) { calls <<- calls + 1; list(modifyList(plus, list(name = "NM_000002.1")), plus) }
-  rm(list = ls(ucsc_offline), envir = ucsc_offline)
-  tx <- transcript_structure("NM_000001.2", "1", 150, cache_dir = dir, fetch = fetch)
-  expect_equal(tx$name, "NM_000001.2")
-  tx <- transcript_structure("NM_000001.2", "1", 150, cache_dir = dir, fetch = fetch)
-  expect_equal(calls, 1)
-  expect_equal(tx$exon_ends, c(200, 400, 600))
-  expect_equal(transcript_structure("NM_000001.3", "1", 150, cache_dir = dir, fetch = fetch)$name, "NM_000001.2")
-  # not a transcript, or no connection: nothing (and no more questions for a while)
-  expect_null(transcript_structure("ENSR0001", "1", 150, cache_dir = dir, fetch = fetch))
-  expect_null(transcript_structure("NM_999.1", "1", 150, cache_dir = dir, fetch = function(...) NULL))
-  expect_null(transcript_structure("NM_998.1", "1", 150, cache_dir = dir, fetch = function(...) stop("asked again")))
-  rm(list = ls(ucsc_offline), envir = ucsc_offline)
+test_that("transcripts from the local table: another version when the file has a newer one, and nothing without the table", {
+  db <- fake_transcript_db()
+  rm(list = ls(transcript_memo), envir = transcript_memo)
+  expect_equal(transcript_structure("NM_000001.3", "1", 150, db = db)$name, "NM_000001.2")
+  expect_equal(transcript_structure("NM_000001.2", "1", 150, db = db)$chrom, "chr1")   # not the copy of the alt contig
+  expect_null(transcript_structure("ENSR0001", "1", 150, db = db))
+  expect_null(transcript_structure("NM_999.1", "1", 150, db = db))
+  expect_null(transcript_structure("NM_000001.2", "1", 150, db = file.path(tempdir(), "none.parquet")))
+  expect_equal(transcript_db_state(start = FALSE), "missing")   # shared folder of the tests: no table
+  expect_match(transcript_db_note("downloading"), "being downloaded")
+  rm(list = ls(transcript_memo), envir = transcript_memo)
 })
 
 test_that("drawings: at scale with the variant, or schematic from EXON / INTRON", {
@@ -72,17 +82,10 @@ test_that("CNVs: exons of the gene inside the CNV, and the transcript of each ge
   expect_match(svg, "fill-opacity")
   expect_match(svg, "#1565c0")
   expect_match(svg, "GENE2")
-  dir <- tempfile()
-  rm(list = ls(ucsc_offline), envir = ucsc_offline)
-  calls <- 0
-  other <- modifyList(plus, list(name = "NM_000009.1", gene = "GENE1", exon_starts = 100, exon_ends = 600))
-  fetch <- function(chrom, pos, build, end = pos) { calls <<- calls + 1; list(other, plus, modifyList(plus, list(name = "XM_1", gene = "GENE2"))) }
-  txs <- cnv_gene_transcripts(c("GENE1", "GENE2", "GENE3"), "1", 250, 450, cache_dir = dir, fetch = fetch)
+  db <- fake_transcript_db()
+  txs <- cnv_gene_transcripts(c("GENE1", "GENE2", "GENE3"), "1", 250, 450, db = db)
   expect_equal(txs$GENE1$name, "NM_000001.2")   # the NM_ with more exons
-  expect_equal(txs$GENE2$name, "XM_1")          # no NM_: another one
+  expect_equal(txs$GENE2$name, "XM_000002.1")   # no NM_: another one
   expect_null(txs$GENE3)
-  txs <- cnv_gene_transcripts(c("GENE1", "GENE2"), "1", 250, 450, cache_dir = dir, fetch = fetch)
-  expect_equal(calls, 1)                         # kept by gene
-  expect_equal(txs$GENE1$exon_ends, c(200, 400, 600))
-  rm(list = ls(ucsc_offline), envir = ucsc_offline)
+  expect_equal(cnv_gene_transcripts("GENE1", "1", 250, 450, tx_names = list(GENE1 = "NM_000009"), db = db)$GENE1$name, "NM_000009.1")
 })
