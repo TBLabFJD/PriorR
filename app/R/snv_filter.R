@@ -15,6 +15,7 @@ snv_params <- function(...) {
     annotations = NULL, columns = NULL, roh_samples = NULL,
     only_keys = NULL,   # variant keys to keep (reanalysis)
     hidden_keys = NULL,   # variant keys to hide (previous analysis rounds, rounds.R)
+    gene_counts = NULL,   # variants per gene for Variants_in_gene (NULL = those of the result)
     glow = NULL)   # list(sources): the GLOWgenes ranking view instead of the order above
   modifyList(p, list(...))
 }
@@ -27,6 +28,7 @@ variant_key <- function(chrom, pos, ref, alt) {
 
 filter_snv <- function(df, p = snv_params()) {
   DF <- df
+  DF$.source_row <- seq_len(nrow(DF))   # rows of df that pass (attribute "source_rows")
   num <- function(col) suppressWarnings(as.numeric(DF[[col]]))
   keep <- function(cond) DF[cond %in% TRUE, , drop = FALSE]
 
@@ -97,6 +99,11 @@ filter_snv <- function(df, p = snv_params()) {
 
   out <- as.data.frame(DF)
   rownames(out) <- NULL
+  source_rows <- out$.source_row
+  out$.source_row <- NULL
+  attr(out, "source_rows") <- source_rows
+  # how many variants of the gene of each row pass the filters
+  if ("SYMBOL" %in% names(out)) out$Variants_in_gene <- variants_in_gene(out$SYMBOL, p$gene_counts %||% gene_variant_counts(out))
 
   # Displayed columns (all the columns are kept for the variant details and the colors):
   # hiding a column never changes the filters. Any column can be hidden (the variant of a row
@@ -105,7 +112,12 @@ filter_snv <- function(df, p = snv_params()) {
   added <- setdiff(names(out), names(df))
   columns <- if (is.null(p$columns)) names(df) else intersect(p$columns, names(out))
   shown <- unique(c(intersect("GLOW_rank", names(out)), columns, added))
-  if (!length(shown)) shown <- intersect(c("CHROM", "POS", "REF", "ALT"), names(out))
+  if (!length(columns)) shown <- c(intersect(c("CHROM", "POS", "REF", "ALT"), names(out)), shown)
+  # the count of variants of the gene next to the gene
+  if (all(c("SYMBOL", "Variants_in_gene") %in% shown)) {
+    shown <- setdiff(shown, "Variants_in_gene")
+    shown <- append(shown, "Variants_in_gene", after = match("SYMBOL", shown))
+  }
   attr(out, "display_columns") <- shown
 
   # Row colors
@@ -113,6 +125,37 @@ filter_snv <- function(df, p = snv_params()) {
   attr(out, "roh") <- roh_rows(out, p$roh_samples)
   attr(out, "not_in_other_test") <- if (is.null(p$other_test_ids)) rep(FALSE, nrow(out)) else !in_other
   out
+}
+
+# Number of different variants per gene in a filtered table (named by gene)
+gene_variant_counts <- function(DF) {
+  if (!nrow(DF) || !"SYMBOL" %in% names(DF)) return(integer(0))
+  gene <- as.character(DF$SYMBOL)
+  first <- !duplicated(paste(gene, row_variant_ids(DF))) & !is.na(gene) & nzchar(gene)
+  counts <- table(gene[first])
+  stats::setNames(as.integer(counts), names(counts))
+}
+variants_in_gene <- function(genes, counts) {
+  n <- unname(counts[as.character(genes)])
+  n[is.na(n) & !is.na(genes) & nzchar(as.character(genes))] <- 0L
+  as.integer(n)
+}
+
+# Rows of df that don't pass the filters (`kept`: the result of filter_snv). In the GLOWgenes
+# view, which shows one row per variant, the other rows of a shown variant are not "out".
+excluded_rows <- function(df, kept, by_variant = FALSE) {
+  out <- setdiff(seq_len(nrow(df)), attr(kept, "source_rows"))
+  if (by_variant && length(out)) out <- out[!row_variant_ids(df[out, , drop = FALSE]) %in% row_variant_ids(kept)]
+  out
+}
+
+# The variants that don't pass the filters as a table like the filtered one (same columns,
+# classifications and colors, in the order of the file)
+# (Variants_in_gene counts the variants of the gene that pass: those of `kept`)
+excluded_snv <- function(df, rows, p = snv_params(), kept = NULL) {
+  filter_snv(df[rows, , drop = FALSE],
+             snv_params(annotations = p$annotations, columns = p$columns, roh_samples = p$roh_samples,
+                        other_test_ids = p$other_test_ids, gene_counts = if (!is.null(kept)) gene_variant_counts(kept)))
 }
 
 # The displayed part of a filtered table

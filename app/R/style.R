@@ -1,5 +1,16 @@
 # Visual helpers: colored badges and cards of the variant details.
 
+# Patient in the header of the page: "Patient 10-0432" (+ the other samples), the file as tooltip
+patient_header <- function(proband, others = character(0), file = NULL) {
+  if (!length(proband) || is.na(proband)) {
+    if (is.null(file)) return(NULL)
+    return(shiny::span(class = "pr-patient", shiny::icon("file"), file))
+  }
+  shiny::span(class = "pr-patient", title = if (!is.null(file)) paste("File:", file),
+              shiny::icon("user"), "Patient", shiny::tags$b(proband),
+              if (length(others)) shiny::span(class = "pr-patient-others", paste("+", paste(others, collapse = ", "))))
+}
+
 info_css <- shiny::tags$style(shiny::HTML("
   .pr-header { background: linear-gradient(90deg, #e8f5e9, #ffffff); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; }
   .pr-header .pr-gene { font-size: 26px; font-weight: 700; color: #1b5e20; margin-right: 10px; }

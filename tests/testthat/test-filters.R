@@ -38,11 +38,11 @@ test_that("hiding columns never changes the rows, any column can be hidden", {
   all_columns <- filter_snv(df, modifyList(p, list(columns = names(df))))
   few_columns <- filter_snv(df, modifyList(p, list(columns = "SYMBOL")))
   expect_equal(all_columns$POS, few_columns$POS)
-  expect_equal(attr(few_columns, "display_columns"), "SYMBOL")
+  expect_equal(attr(few_columns, "display_columns"), c("SYMBOL", "Variants_in_gene"))
   expect_equal(attr(all_columns, "priority"), attr(few_columns, "priority"))
   # nothing selected: the variant key, so the table is never empty
   no_columns <- filter_snv(df, modifyList(p, list(columns = character(0))))
-  expect_equal(attr(no_columns, "display_columns"), c("CHROM", "POS", "REF", "ALT"))
+  expect_equal(attr(no_columns, "display_columns"), c("CHROM", "POS", "REF", "ALT", "Variants_in_gene"))
 })
 
 test_that("the same parameters always give the same table", {
@@ -181,4 +181,38 @@ test_that("CNVs: GLOWgenes rank of a CNV is the best of its genes; filter and or
   expect_equal(cnv_locus(df[1, ]), "1:1-550")
   big <- data.frame(SV_chrom = "chr2", SV_start = 1e6, SV_end = 2e6)
   expect_equal(cnv_locus(big), "chr2:999700-1000300 chr2:1999700-2000300")
+})
+
+test_that("filtered out: the rows that don't pass, as a table like the filtered one", {
+  df <- make_variants(6, CADD_PHRED = c(30, 5, 20, NA, 16, 40), CLNSIG = c(NA, NA, "Benign", NA, "Pathogenic", NA))
+  p <- snv_params(min_cadd = 15, exclude_clinvar_benign = TRUE, prioritize = TRUE, columns = c("SYMBOL", "CADD_PHRED"))
+  kept <- filter_snv(df, p)
+  expect_false(".source_row" %in% names(kept))
+  expect_setequal(attr(kept, "source_rows"), c(1, 4, 5, 6))
+  out <- excluded_rows(df, kept)
+  expect_equal(out, c(2, 3))
+  ex <- excluded_snv(df, out, p)
+  expect_equal(ex$CADD_PHRED, c(5, 20))
+  expect_equal(attr(ex, "display_columns"), c("SYMBOL", "Variants_in_gene", "CADD_PHRED"))
+  expect_equal(length(attr(ex, "priority")), 2)
+  # pass + filtered out = all the rows
+  expect_equal(nrow(kept) + length(out), nrow(df))
+  # one row per variant (GLOWgenes view): another transcript of a shown variant is not out
+  two <- df[c(1, 1, 2), ]
+  kept1 <- filter_snv(two, snv_params(min_cadd = 15))
+  kept1 <- kept1[1, ]
+  attr(kept1, "source_rows") <- 1L
+  expect_equal(excluded_rows(two, kept1), c(2, 3))
+  expect_equal(excluded_rows(two, kept1, by_variant = TRUE), 3)
+})
+
+test_that("Variants_in_gene: different variants of the gene of each row that pass the filters", {
+  df <- make_variants(5, SYMBOL = c("A", "A", "B", "A", NA), CADD_PHRED = c(30, 25, 20, 2, 40))
+  df <- rbind(df, df[1, ])   # another transcript of the first variant
+  kept <- filter_snv(df, snv_params(min_cadd = 10))
+  expect_equal(kept$Variants_in_gene, c(2L, 2L, 1L, NA, 2L))
+  # the filtered out rows count the variants of their gene that pass
+  ex <- excluded_snv(df, excluded_rows(df, kept), kept = kept)
+  expect_equal(ex$SYMBOL, "A")
+  expect_equal(ex$Variants_in_gene, 2L)
 })

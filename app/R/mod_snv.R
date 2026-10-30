@@ -116,6 +116,9 @@ snv_sidebar_ui <- function(id) {
       downloadButton(ns("download"), "Download filtered data", class = "btn-primary", style = "margin: 6px 15px;")))
 }
 
+# Patient of the loaded file, for the header of the page (output of snv_server)
+snv_patient_ui <- function(id) uiOutput(NS(id)("patient"), inline = TRUE)
+
 snv_main_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -127,6 +130,7 @@ snv_main_ui <- function(id) {
         conditionalPanel("input.view == 'glow'", ns = ns, style = "margin-bottom: -10px;",
           shinyWidgets::prettyCheckbox(ns("glow_hide_rank0"), "Hide panel genes", value = FALSE, outline = TRUE, status = "success")),
         uiOutput(ns("loaded_info"), inline = TRUE)),
+    uiOutput(ns("out_info")),
     uiOutput(ns("glow_info")),
     uiOutput(ns("priority_info")),
     uiOutput(ns("reanalysis_info")),
@@ -310,13 +314,51 @@ snv_server <- function(id, user) {
       }
     })
 
+    # Patient of the loaded file, in the header of the page: the proband (the first sample, or the
+    # one chosen for the trio), the other samples and the file
+    output$patient <- renderUI({
+      req(data())
+      samples <- sample_names(names(data()))
+      proband <- if (isTRUE(input$trio_proband %in% samples)) input$trio_proband else samples[1]
+      file <- loader$loaded()$file
+      patient_header(proband, setdiff(samples, proband), if (length(file)) basename(file))
+    })
+
     output$loaded_info <- renderUI({
       req(data(), filtered())
       hidden <- length(hidden_keys())
-      p(class = "text-muted", sprintf("%s rows loaded · %s shown · profile: %s%s",
-                                      format(nrow(data()), big.mark = ","), format(nrow(filtered()), big.mark = ","),
-                                      applied_profile() %||% "None",
-                                      if (hidden) sprintf(" · hiding %s variants of previous rounds", format(hidden, big.mark = ",")) else ""))
+      n <- function(x) format(x, big.mark = ",")
+      out <- showing_out()
+      # the two sets of variants: those that pass the filters and those that don't (links to show each one)
+      set_link <- function(id, label, active, color)
+        actionLink(ns(id), label, class = "pr-set-link", style = sprintf("color: %s;%s", color, if (active) " font-weight: 700; text-decoration: underline;" else ""))
+      p(class = "text-muted", style = "margin: 0;",
+        sprintf("%s rows loaded · ", n(nrow(data()))),
+        set_link("show_pass", paste(n(nrow(filtered())), "pass"), !out, "#2e7d32"), " · ",
+        set_link("show_out", paste(n(length(out_rows())), "filtered out"), out, "#c62828"),
+        sprintf(" · profile: %s%s", applied_profile() %||% "None",
+                if (hidden) sprintf(" · hiding %s variants of previous rounds", n(hidden)) else ""))
+    })
+
+    # ---- Variants that don't pass the filters: shown instead of the others until going back ----
+    showing_out <- reactiveVal(FALSE)
+    out_rows <- reactive(excluded_rows(data(), filtered(), by_variant = identical(input$view, "glow")))
+    observeEvent(input$show_out, showing_out(TRUE))
+    observeEvent(input$show_pass, showing_out(FALSE))
+    observeEvent(input$back_to_pass, showing_out(FALSE))
+    observeEvent(data(), showing_out(FALSE))
+    # the table of the page: the variants that pass, or those that don't
+    table_rows <- reactive({
+      if (!showing_out()) return(filtered())
+      excluded_snv(data(), out_rows(), params(), kept = filtered())
+    })
+    output$out_info <- renderUI({
+      req(showing_out(), data())
+      div(style = "padding: 8px 14px; margin-bottom: 8px; background: #fdecea; color: #b71c1c; border-left: 4px solid #e53935; border-radius: 4px;",
+          icon("filter"),
+          sprintf(" Showing the %s variants that don't pass the filters. ", format(length(out_rows()), big.mark = ",")),
+          actionLink(ns("back_to_pass"), sprintf("Back to the %s that pass", format(nrow(filtered()), big.mark = ",")),
+                     style = "font-weight: 700; color: #1b5e20;"))
     })
 
     # ---- Analysis rounds (snv_rounds.R) ----
@@ -440,10 +482,11 @@ snv_server <- function(id, user) {
 
     # ---- Table (processed in the server: the browser only gets the visible page) ----
     output$table <- DT::renderDT({
-      DF <- filtered()
+      DF <- table_rows()
       shown <- display_table(DF)
       shown$Classify <- classify_buttons(nrow(shown), ns("classify"))
-      colors <- row_colors(DF, roh = input$roh, other_test = input$other_test_colour, priority = isTRUE(input$color_priority) || identical(input$view, "priority"))
+      colors <- row_colors(DF, roh = input$roh, other_test = input$other_test_colour,
+                           priority = isTRUE(input$color_priority) || identical(input$view, "priority") && !showing_out())
       priorr_datatable(shown, ns("full_cell"), colors, reorder_input = ns("column_order"))
     }, server = TRUE)
     # Dragging a header moves the column in the picker, so the table, the download and the
@@ -458,7 +501,7 @@ snv_server <- function(id, user) {
 
     selected <- reactive({
       i <- input$table_rows_selected
-      if (length(i) != 1 || i > nrow(filtered())) NULL else filtered()[i, , drop = FALSE]
+      if (length(i) != 1 || i > nrow(table_rows())) NULL else table_rows()[i, , drop = FALSE]
     })
     info <- variant_info_server("info", selected, data, user, ped)
     reads_server("reads", selected, data)
@@ -467,13 +510,13 @@ snv_server <- function(id, user) {
     observeEvent(input$classify, {
       i <- input$classify
       DT::selectRows(DT::dataTableProxy("table"), i)
-      v <- filtered()[i, ]
+      v <- table_rows()[i, ]
       info$open(list(key = variant_key(v$CHROM, v$POS, v$REF, v$ALT), gene = as.character(v$SYMBOL), label = variant_label(v)))
     })
 
     output$download <- downloadHandler(
       filename = function() paste0("priorr_variants_", Sys.Date(), ".tsv"),
-      content = function(file) data.table::fwrite(display_table(filtered()), file, sep = "\t", na = ""))
+      content = function(file) data.table::fwrite(display_table(table_rows()), file, sep = "\t", na = ""))
 
     setBookmarkExclude(c("apply_profile", "save_profile", "delete_profile", "profile_name", "save_panel", "panel_name"))
     observeEvent(data(), {

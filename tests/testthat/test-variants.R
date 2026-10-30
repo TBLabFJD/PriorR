@@ -110,3 +110,12 @@ test_that("VCF of another test, plain or .gz (no zcat), with multiallelic sites 
   expect_equal(ids, variant_ids(c("chr1", "chr2", "chr2"), c("100", "200", "200"), c("A", "C", "C"), c("G", "T", "G")))
   expect_identical(read_vcf_ids(file.path(dir, "a.vcf.gz")), ids)
 })
+
+test_that("patient in the header: proband, other samples, file as tooltip", {
+  h <- as.character(patient_header("10-0432", c("P002", "P003"), "10-0432.tsv"))
+  expect_match(h, "<b>10-0432</b>")
+  expect_match(h, "\\+ P002, P003")
+  expect_match(h, 'title="File: 10-0432.tsv"')
+  expect_match(as.character(patient_header(character(0), file = "x.tsv")), "x.tsv")
+  expect_null(patient_header(NA))
+})

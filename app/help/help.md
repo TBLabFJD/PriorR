@@ -189,7 +189,7 @@ and the administrator can change them or add others.
 `prioritize`.
 
 **columns:** displayed columns, with the names of the file (e.g. `SYMBOL`, shown as GENE);
-`null` = the default ones. CHROM, POS, REF and ALT are always shown.
+`null` = the default ones, in the order of the table.
 
 Panels are written as `source:identifier`: `panelapp_genomics_england:307`,
 `panelapp_australia:3149`, `retigene:rp`, `orphanet:retinal_dystrophy_panel`,
@@ -230,7 +230,17 @@ close to 0 when the gene is predicted for many diseases (e.g. highly connected g
 
 They apply to the loaded variants and can be changed at any time. Hiding columns doesn't change
 the result; any column can be hidden in *Columns*, and dragging a header of the table moves the
-column (the order is kept in profiles, saved sessions and the download). Variants without gene, consequence or region are kept (ticking "NA" in the lists).
+column (the order is kept in profiles, saved sessions and the download).
+
+**Pass / filtered out:** the line above the table counts the rows that pass the filters and those
+that don't. Click *filtered out* to see the variants the filters remove (with their columns,
+classifications and details, in the order of the file; the download saves them too) and *pass*, or
+*Back to … that pass*, to return. In the GLOWgenes view the other transcripts of a shown variant
+don't count as filtered out.
+
+**Variants in gene** (next to GENE): how many different variants of the gene of the row pass the
+current filters (useful for compound heterozygotes); it changes with the filters. In the filtered out
+variants it also counts those of the gene that pass. Variants without gene, consequence or region are kept (ticking "NA" in the lists).
 Frequencies or scores that are empty or not a number count as missing: a missing frequency or CADD
 never removes a variant.
 

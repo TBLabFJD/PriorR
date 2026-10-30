@@ -79,6 +79,7 @@ test_that("SNV module: a loaded file gets the filters of its profile; filter, cl
     loader$loaded(list(df = df, profile = builtin_profiles()$None, restoring = FALSE))
     session$flushReact()
     expect_equal(nrow(filtered()), 6)                 # default: no filters
+    expect_match(output$patient$html, "Patient")
     expect_equal(applied_profile(), "None")
 
     # the WES profile as the sidebar sets it (CADD >= 15 as a number, benign out, coding/splicing)
@@ -86,7 +87,14 @@ test_that("SNV module: a loaded file gets the filters of its profile; filter, cl
                       columns = c("SYMBOL", "CADD_PHRED"))
     out <- filtered()
     expect_equal(out$CADD_PHRED, c(16, 30))
-    expect_equal(attr(out, "display_columns"), c("SYMBOL", "CADD_PHRED"))
+    expect_equal(attr(out, "display_columns"), c("SYMBOL", "Variants_in_gene", "CADD_PHRED"))
+    # the variants that don't pass: shown instead of the others, and back
+    expect_equal(length(out_rows()), 4)
+    session$setInputs(show_out = 1)
+    expect_equal(nrow(table_rows()), 4)
+    expect_equal(sort(table_rows()$CADD_PHRED), c(5, 20, 40))   # and one without CADD (intronic)
+    session$setInputs(back_to_pass = 1)
+    expect_equal(table_rows()$CADD_PHRED, c(16, 30))
     # dragging a header: the new order goes to the column picker (and so to the table and profiles)
     session$setInputs(column_order = c("CADD_PHRED", "SYMBOL", "Classify"))
 

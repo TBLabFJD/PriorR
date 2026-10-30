@@ -8,6 +8,7 @@ column_labels <- function(columns) {
   labels <- sub("^(.+)_(GT|VAF|AD|DP|SF|GD|VD|ROH)$", "\\2 \\1", columns)
   labels[columns == "SYMBOL"] <- "GENE"
   labels[columns == "GLOW_rank"] <- "GLOW rank"
+  labels[columns == "Variants_in_gene"] <- "Var. in gene"
   gsub("_", " ", labels, fixed = TRUE)
 }
 
@@ -152,7 +153,7 @@ priorr_datatable <- function(DF, full_cell_input, row_color = NULL, page_length 
     special,
     list(list(targets = "_all", render = cell_render)),
     lapply(unique(widths), function(w) list(targets = which(widths == w) - 1L, width = w)),
-    list(list(targets = which(widths == "70px") - 1L, className = "dt-center")),
+    list(list(targets = which(widths == "70px" | headers == "Variants_in_gene") - 1L, className = "dt-center")),
     if (length(hidden)) list(list(targets = hidden, visible = FALSE, searchable = FALSE)))
 
   # colored rows: a CSS class from the hidden .row_color column (table_css)

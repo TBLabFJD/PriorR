@@ -10,7 +10,8 @@ ui <- function(request) {
       titleWidth = 280,
       leftUi = tagList(
         tags$li(class = "dropdown",
-                actionLink("open_help", "Help", icon = icon("question-circle"), style = "color: white;"))),
+                actionLink("open_help", "Help", icon = icon("question-circle"), style = "color: white;")),
+        tags$li(class = "dropdown", snv_patient_ui("snv"))),
       auth_header_ui("auth")),
 
     sidebar = shinydashboardPlus::dashboardSidebar(
@@ -40,6 +41,11 @@ ui <- function(request) {
           /* view buttons above the table: the view not in use in grey */
           #snv-view .btn:not(.active) { background: #e0e0e0; border-color: #cfcfcf; color: #757575; box-shadow: none; }
           #snv-view .btn:not(.active):hover { background: #d5d5d5; color: #424242; }
+          .pr-patient { display: inline-block; margin: 9px 0 0 25px; padding: 5px 14px; border-radius: 16px;
+                        background: rgba(255, 255, 255, 0.95); color: #1b5e20; font-size: 16px; white-space: nowrap; }
+          .pr-patient b { font-size: 18px; margin-left: 4px; letter-spacing: 0.3px; }
+          .pr-patient .fa { margin-right: 6px; }
+          .pr-patient-others { color: #607d8b; font-size: 13px; margin-left: 8px; }
           .main-header .logo img { display: block; height: 40px; margin: 5px auto; }"))),
       tabsetPanel(
         id = "navbar",
