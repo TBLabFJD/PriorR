@@ -53,5 +53,5 @@ jobs:
           app <- shiny::shinyAppDir(".")
           html <- as.character(app$httpHandler(list(PATH_INFO = "/", REQUEST_METHOD = "GET",
                                                     rook.input = list(read = function(...) raw(0))))$content)
-          stopifnot(grepl("PriorR v4.0", html))
+          stopifnot(grepl("PriorR v4", html))
           cat("PriorR UI built\n")

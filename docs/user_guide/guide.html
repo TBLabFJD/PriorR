@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>PriorR 4.0 User Guide</title>
+<title>PriorR 4.1 User Guide</title>
 <style>
   @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
   body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; }
@@ -34,8 +34,8 @@
 <body>
 
 <div class="cover">
-  <img class="logo" src="img/logo_v4.png" alt="PriorR v4.0">
-  <h1 style="margin-top: 24px;">PriorR 4.0 User Guide</h1>
+  <img class="logo" src="img/logo.png" alt="PriorR">
+  <h1 style="margin-top: 24px;">PriorR 4.1 User Guide</h1>
   <div class="sub">Filtering and prioritization of disease-linked genetic variants</div>
   <div class="small">
     <img src="img/tblab_logo.png" style="width: 60px; vertical-align: middle;" alt="Bioinformatics Unit"><br>
@@ -47,7 +47,7 @@
 
 <h2>Contents</h2>
 <ol class="toc">
-  <li><a href="#intro">What is PriorR</a> &middot; <a href="#new">What is new in 4.0</a></li>
+  <li><a href="#intro">What is PriorR</a> &middot; <a href="#new41">What is new in 4.1</a> &middot; <a href="#new">in 4.0</a></li>
   <li><a href="#install">Requirements and installation</a></li>
   <li><a href="#config">Configuration of the lab and first start</a></li>
   <li><a href="#input">Input files</a></li>
@@ -61,6 +61,7 @@
   <li><a href="#info">Variant information and ACMG criteria</a></li>
   <li><a href="#classify">Classifications, comments and reanalysis</a></li>
   <li><a href="#rounds">Analysis rounds</a></li>
+  <li><a href="#projects">Projects (other samples)</a></li>
   <li><a href="#reads">Reads (BAM / CRAM)</a></li>
   <li><a href="#cnv">CNVs</a></li>
   <li><a href="#users">Users, groups and sessions</a></li>
@@ -76,6 +77,18 @@ with AnnotSV) and offers, in a graphical interface, the filters and functions us
 population frequencies, pathogenicity predictors, virtual gene panels, phenotypes (HPO), inheritance
 patterns and trios, prioritization of variants and genes (GLOWgenes), ACMG criteria, comments and
 classifications shared by the lab, and the reads of each variant.</p>
+
+<div class="new" id="new41"><b>What is new in PriorR 4.1</b>
+<ul>
+  <li><b>Projects</b>: groups of variant files (one per sample, or files with several samples). Each variant says in how many
+      other samples of the project it is, with a filter by that number and the list of samples (section 15).</li>
+  <li><b>Gene structure</b>: the exons and introns of the transcript with the variant, at scale, and its distance to the
+      borders of the exon or intron (section 12).</li>
+  <li><b>Table</b>: links to the variants that pass the filters and to those <i>filtered out</i>; <i>Var. in gene</i>; any
+      column can be hidden or moved; sorting keeps the previous order within ties; empty allele frequencies sort as 0;
+      the column filters, search and order are kept when the table changes.</li>
+  <li>The <b>patient</b> in the header; PriorR always opens at <code>http://127.0.0.1:8484</code>.</li>
+</ul></div>
 
 <div class="new" id="new"><b>What is new in PriorR 4.0</b>
 <ul>
@@ -144,13 +157,19 @@ signs in once per computer (<i>Remember me</i>).</p>
 (synthetic, made by <code>scripts/make_demo_data.R</code>).</p>
 
 <h2 id="gui" class="break">5. The interface</h2>
-<p>The header shows the user (password and sign out). The tabs are <b>SNV</b>, <b>CNV</b>, <b>Users and groups</b>
+<p>The header shows the <b>patient</b> of the loaded file (the proband or first sample, with the other samples of the file)
+and the user (password and sign out). The tabs are <b>SNV</b>, <b>CNV</b>, <b>Users and groups</b>
 (administrators) and <b>Help</b>. On the left, the sidebar with the filters and functions of the tab; in the centre,
-the table, the variant information, the reads and the saved sessions (fig. 3).</p>
-<figure><img src="img/03_main_snv.png"><figcaption>Figure 2. Main interface (SNVs) after loading the demo trio with the WES profile.</figcaption></figure>
-<p>Above the table: the three <b>views</b> (<i>Sidebar filters</i>, <i>PriorR priority</i> and <i>GLOWgenes ranking</i>, the one in use in green) and
-how many rows are loaded and shown. Column headers show <code>SYMBOL</code> as GENE and no underscores; each column has
-its own search box; long values are shown in full on hover or click. <i>Save data</i> downloads the filtered table.</p>
+the table, the variant information, the reads and the saved sessions (fig. 2).</p>
+<figure><img src="img/03_main_snv.png"><figcaption>Figure 2. Main interface (SNVs) after loading the demo trio with the WES profile, with a project chosen.</figcaption></figure>
+<p>Above the table: the three <b>views</b> (<i>Sidebar filters</i>, <i>PriorR priority</i> and <i>GLOWgenes ranking</i>, the one in use in green),
+the rows of the file and those that passed the load filters, and of them how many <b>pass</b> the sidebar filters and how many are
+<b>filtered out</b>: click <i>filtered out</i> to see the variants the filters remove (with their details; <i>Back to … that pass</i> returns).
+Column headers show <code>SYMBOL</code> as GENE and no underscores; each column has its own filter box; long values are shown in full
+on hover or click. <b>Var. in gene</b> (next to GENE) says how many variants of the gene pass the current filters (compound
+heterozygotes). Any column can be hidden in <i>Columns</i> and moved by dragging its header; the order is kept in profiles and sessions.
+Clicking a header sorts by it, keeping the previous order within equal values; empty allele frequencies (gnomAD, FJD, CSVS) sort as 0.
+The column filters, the search and the order are kept when the table changes. <i>Save data</i> downloads the table shown.</p>
 
 <h2 id="open">6. Opening a variant file and filtering profiles</h2>
 <p><b>Load variants &gt; Open variant file</b> opens the dialog of fig. 3: choose the file (from the folders of the lab; every file of
@@ -244,56 +263,73 @@ closest genes in the GLOWgenes networks (fig. 8). <b>Hide panel genes</b> keeps 
 (with AlphaMissense and the gene constraint); OMIM; external links (GeneCards, STRING, OMIM, ClinVar, gnomAD, PanelApp, DECIPHER,
 GTEx, UniProt, VarSome, SpliceAI Lookup, UCSC...); ACMG criteria and comments.</p>
 <figure><img src="img/08_variant_info.png"><figcaption>Figure 9. Variant information of a stop variant of CNGB3 in the demo trio.</figcaption></figure>
-<p>The <b>ACMG (suggested)</b> card (fig. 10) lists the criteria that the annotation supports (ACMG/AMP 2015 with the ClinGen SVI
+<p><b>Gene structure</b> (fig. 10) draws the transcript of the row from 5′ to 3′: exons at scale (coding part thicker, UTRs
+thinner), introns shortened, the variant in red and its exon or intron in orange, with the distance to its borders in bp (useful
+for splicing). The exons come from the UCSC Genome Browser the first time a transcript is seen (only its name and the position
+are sent) and are kept in the shared folder; without internet, a schematic drawing with the EXON / INTRON columns.</p>
+<figure><img src="img/18_gene_structure.png"><figcaption>Figure 10. Gene structure of the public CFTR F508del variant (exon 11 of 27), in a small synthetic table.</figcaption></figure>
+<p>The <b>ACMG (suggested)</b> card (fig. 11) lists the criteria that the annotation supports (ACMG/AMP 2015 with the ClinGen SVI
 recommendations) with their points and class (Tavtigian et al. 2020): PVS1 (null variant), PM2_Supporting (absent or very rare),
 PM4, PP3 / BP4 (REVEL thresholds of Pejaver et al. 2022, CADD without REVEL, SpliceAI), BP7, BA1 / BS1 and PM6 (de novo in the
 trio), PS1 / PM5 (same amino acid change / another missense at the same residue pathogenic in ClinVar, same transcript). They are
 suggestions: segregation, functional data, phenotype or <i>in trans</i> are added by the analyst.</p>
-<figure><img src="img/09_acmg_card.png"><figcaption>Figure 10. Predictors, gene constraint and the ACMG criteria suggested from the annotation.</figcaption></figure>
+<figure><img src="img/09_acmg_card.png"><figcaption>Figure 11. Predictors, gene constraint and the ACMG criteria suggested from the annotation.</figcaption></figure>
 
 <h2 id="classify" class="break">13. Classifications, comments and reanalysis</h2>
-<p><b>Add comment / classification</b> (fig. 11): classification (Benign ... Pathogenic), ACMG criteria (the suggested ones come
+<p><b>Add comment / classification</b> (fig. 12): classification (Benign ... Pathogenic), ACMG criteria (the suggested ones come
 chosen: remove, change or add, and the points and class are recalculated), comment and who sees it: <i>all my groups</i>, one
 group or only me. Classifications belong to the variant (chromosome, position, alleles), so they are seen in every file
 that has it. <b>Classification &gt; Show classifications and comments</b> adds them to the table.</p>
-<figure><img src="img/10_classify.png"><figcaption>Figure 11. Classifying a variant with its ACMG criteria.</figcaption></figure>
+<figure><img src="img/10_classify.png"><figcaption>Figure 12. Classifying a variant with its ACMG criteria.</figcaption></figure>
 <p><b>Reanalysis.</b> When a variant is classified, PriorR saves what the annotation said (ClinVar, gnomAD popmax, green PanelApp panels
 of the gene, ACMG suggestion). When a newer annotation of the patient is opened, a box lists the classified variants that changed
-(fig. 12); <i>Only classified variants with changes</i> shows only them.</p>
-<figure><img src="img/13_reanalysis.png"><figcaption>Figure 12. Reanalysis: the ClinVar classification of a classified variant changed.</figcaption></figure>
+(fig. 13); <i>Only classified variants with changes</i> shows only them.</p>
+<figure><img src="img/13_reanalysis.png"><figcaption>Figure 13. Reanalysis: the ClinVar classification of a classified variant changed.</figcaption></figure>
 
 <h2 id="rounds" class="break">14. Analysis rounds</h2>
 <p>To analyze a genome in steps without reviewing the same variants again: in <b>Analysis rounds</b>, <i>Save a round with the
 current panels, frequency and CADD</i>. A round keeps the variants of the current gene panels / HPO / genes, maximum
 frequency and minimum CADD (the other filters are not used) and its default name says so (e.g.
 <code>P001 · RetiGene - RP (v2025) · AF ≤ 0.01 · CADD ≥ 20</code>). With new filters, tick <b>Hide the variants of previous
-rounds</b> to see only new variants (fig. 13). Rounds are saved per user and file and can be deleted.</p>
-<figure><img src="img/12_rounds.png"><figcaption>Figure 13. A saved round and its variants hidden in the next analysis.</figcaption></figure>
+rounds</b> to see only new variants (fig. 14). Rounds are saved per user and file and can be deleted.</p>
+<figure><img src="img/12_rounds.png"><figcaption>Figure 14. A saved round and its variants hidden in the next analysis.</figcaption></figure>
 
-<h2 id="reads">15. Reads (BAM / CRAM)</h2>
+<h2 id="projects" class="break">15. Projects (other samples)</h2>
+<p>A <b>project</b> groups the variant files of several samples, usually one file per sample (a file with several samples, e.g. a
+trio, counts each sample by its <code>&lt;sample&gt;_GT</code> column). In <b>Project (other samples) &gt; Manage projects</b> (fig. 15):
+create a project and add its files. Each file is read once in the background and only its variants and genotypes are kept in the
+shared folder (a genome takes a few MB); changed files are read again with <i>Index the new files</i>.</p>
+<figure><img src="img/19_projects.png"><figcaption>Figure 15. A project of three synthetic families, indexed.</figcaption></figure>
+<p>Choose the project of the loaded sample in <b>Project</b>: the table gets <b>In project</b> (other samples with the variant) and
+<b>Hom in project</b> (of them, homozygous) next to GENE; the samples of the loaded file are not counted. <i>Hide variants in more than
+this number of other samples</i> removes recurrent artefacts or variants frequent in the population. <i>Variant information</i> lists the
+other samples with the variant, their genotype and file (fig. 16).</p>
+<figure><img src="img/20_project_card.png"><figcaption>Figure 16. The other samples of the project with the selected variant.</figcaption></figure>
+
+<h2 id="reads">16. Reads (BAM / CRAM)</h2>
 <p>The <b>Reads (IGV)</b> box shows the reads of the selected variant with igv.js: <i>Open BAM / CRAM files</i> (with their
 index next to them: <code>X.bam.bai</code>, <code>X.bai</code>, <code>.csi</code>, <code>.crai</code>, also in capitals; each file is assigned to the sample whose name it contains). The files are read
 from the computer; the reference genome comes from the IGV servers. <i>Open in IGV desktop</i> sends the files and the position to IGV
 (port 60151 enabled). In CNVs, small CNVs are shown whole and big ones by their two breakpoints.</p>
 
-<h2 id="cnv" class="break">16. CNVs</h2>
-<p>The <b>CNV</b> tab opens AnnotSV files (fig. 14). Filters: samples, annotation mode (<i>full</i>: one row per CNV; <i>split</i>:
+<h2 id="cnv" class="break">17. CNVs</h2>
+<p>The <b>CNV</b> tab opens AnnotSV files (fig. 17). Filters: samples, annotation mode (<i>full</i>: one row per CNV; <i>split</i>:
 one per gene), type, location, minimum ACMG class, number of programs, genes, panels, disease-specific genes, HPO and frequency of
 benign gains / losses. <b>GLOWgenes ranking</b> gives each CNV the best rank of its genes (<code>GLOW_rank</code>), to order or limit.
-The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 15).</p>
-<figure><img src="img/14_cnv.png"><figcaption>Figure 14. CNVs of the demo ordered by the GLOWgenes rank of their genes.</figcaption></figure>
-<figure><img src="img/15_cnv_info.png"><figcaption>Figure 15. CNV information.</figcaption></figure>
+The CNV information shows size, class, genes, known pathogenic CNVs, OMIM / GenCC, constraint and links (fig. 18).</p>
+<figure><img src="img/14_cnv.png"><figcaption>Figure 17. CNVs of the demo ordered by the GLOWgenes rank of their genes.</figcaption></figure>
+<figure><img src="img/15_cnv_info.png"><figcaption>Figure 18. CNV information.</figcaption></figure>
 
-<h2 id="users" class="break">17. Users, groups and sessions</h2>
-<p><b>Users and groups</b> (administrators, fig. 16): create users, change passwords, deactivate users, make administrators,
+<h2 id="users" class="break">18. Users, groups and sessions</h2>
+<p><b>Users and groups</b> (administrators, fig. 19): create users, change passwords, deactivate users, make administrators,
 create groups and assign members. Members of a group see the comments shared with their groups. From the command line,
 <code>Rscript Program_files/scripts/priorr_admin.R reset-password &lt;user&gt;</code> resets a password.
 <b>Saved sessions</b> keeps an analysis (file, profile, filters, columns, BAM files) to open it again later, also from another computer.</p>
-<figure><img src="img/17_users.png"><figcaption>Figure 16. Users and groups.</figcaption></figure>
-<p>The <b>Help</b> tab (fig. 17) has the complete documentation and the configuration of the computer.</p>
-<figure><img src="img/16_help.png"><figcaption>Figure 17. In-app Help.</figcaption></figure>
+<figure><img src="img/17_users.png"><figcaption>Figure 19. Users and groups.</figcaption></figure>
+<p>The <b>Help</b> tab (fig. 20) has the complete documentation and the configuration of the computer.</p>
+<figure><img src="img/16_help.png"><figcaption>Figure 20. In-app Help.</figcaption></figure>
 
-<h2 id="resources">18. Updating the resources</h2>
+<h2 id="resources">19. Updating the resources</h2>
 <p>From the <code>app/</code> folder (they need internet):</p>
 <table>
   <tr><th>Resource</th><th>Command</th></tr>
@@ -307,8 +343,11 @@ create groups and assign members. Members of a group see the comments shared wit
 <p>Other files the lab can adapt: <code>Program_files/profiles/*.json</code> (built-in profiles), <code>links.tsv</code> (external
 links), <code>glowgenes.json</code> (filters of the GLOWgenes view).</p>
 
-<h2 id="trouble">19. Troubleshooting</h2>
+<h2 id="trouble">20. Troubleshooting</h2>
 <ul>
+  <li><b>The address of PriorR:</b> <code>http://127.0.0.1:8484</code>; when a second PriorR is open, the next port (8485...).</li>
+  <li><b>A project counts nothing:</b> check in <i>Manage projects</i> that its files are <i>indexed</i> (not pending or not found).</li>
+  <li><b>No gene structure drawing:</b> the transcript (Feature) must be a RefSeq NM_ / NR_ or Ensembl ENST, and the first time internet is needed.</li>
   <li><b>The first load of a genome is slow:</b> it prepares a cache; the next loads take seconds.</li>
   <li><b>I don't see the comments of a colleague:</b> check that you share a group and that the comment is not private.</li>
   <li><b>Each computer sees different users:</b> they don't use the same shared folder (see Help &gt; configuration).</li>
@@ -318,7 +357,7 @@ links), <code>glowgenes.json</code> (filters of the GLOWgenes view).</p>
   <li><b>Run GLOWgenes says Docker is not available:</b> install Docker, start it and (Linux) add the user to the <code>docker</code> group.</li>
 </ul>
 
-<h2 id="cite">20. Citations</h2>
+<h2 id="cite">21. Citations</h2>
 <ul>
   <li>GLOWgenes: de la Fuente L, Del Pozo-Valero M, Perea-Romero I, Blanco-Kelly F, Fernández-Caballero L, Cortón M, Ayuso C,
       Mínguez P. Prioritization of new candidate genes for rare genetic diseases by a disease-aware evaluation of heterogeneous

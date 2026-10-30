@@ -58,6 +58,6 @@ if (!port_free(port)) {
   free <- Filter(port_free, port + 1:20)
   port <- if (length(free)) free[1] else httpuv::randomPort()
 }
-message("PriorR v4.0: http://127.0.0.1:", port, "  (close this window to stop PriorR)")
+message("PriorR v4.1: http://127.0.0.1:", port, "  (close this window to stop PriorR)")
 shiny::runApp(file.path(priorr_home, "app"), host = "127.0.0.1", port = port,
               launch.browser = Sys.getenv("PRIORR_NO_BROWSER") == "")

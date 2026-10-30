@@ -6,7 +6,7 @@
 # (closing it stops PriorR). The data of the lab are not inside the app: the first start asks
 # where the shared folder is. If R is missing, the installer says so and opens the download page.
 set -euo pipefail
-VERSION=4.0
+VERSION=4.1
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/../.." && pwd)
 BUILD="$HERE/build"

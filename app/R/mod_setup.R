@@ -14,7 +14,8 @@ setup_server <- function(id) {
 
     showModal(modalDialog(
       title = paste("Set up", priorr_name, "on this computer"), easyClose = FALSE, footer = NULL, size = "m",
-      div(style = "text-align: center; margin-bottom: 15px;", tags$img(src = "logo_v4.png", style = "width: 200px;")),
+      div(style = "text-align: center; margin-bottom: 15px;", tags$img(src = "logo.png", style = "width: 200px;"),
+          div(class = "text-muted", paste("Version", priorr_version))),
       p("PriorR keeps the users, comments, profiles and saved sessions in a ",
         strong("shared folder of the lab"), ", so that every computer sees the same. ",
         "The variant files are not copied: they are opened from where they are."),

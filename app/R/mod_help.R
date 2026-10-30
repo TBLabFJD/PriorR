@@ -23,7 +23,7 @@ help_ui <- function(id) {
           tags$li(tags$a(href = tblab_url, target = "_blank", "Website of the Bioinformatics Unit")),
           tags$li(tags$a(href = "https://github.com/TBLabFJD/PriorR", target = "_blank", "PriorR on GitHub")),
           tags$li(tags$a(href = "https://github.com/TBLabFJD/GLOWgenes", target = "_blank", "GLOWgenes on GitHub")),
-          tags$li(tags$a(href = "PriorR4_UserGuide.pdf", target = "_blank", strong("PriorR 4.0 user guide (PDF)")))),
+          tags$li(tags$a(href = "PriorR4_UserGuide.pdf", target = "_blank", strong(paste("PriorR", priorr_version, "user guide (PDF)"))))),
         helpText("GLOWgenes: de la Fuente L et al., Int J Mol Sci 2023;24(2):1661.", br(),
                  "GLOWgenes rankings of PanelApp, disease-specific genes and SGDS: Benítez Y, Uría-Regojo G, Mínguez P. A global survey of systems biology-based predictions of gene-rare disease associations to enhance new diagnoses. Sci Rep 2026. doi:10.1038/s41598-026-54510-3 (CC BY-NC-ND 4.0).", br(),
                  "RetiGene: Am J Hum Genet 2025;112(10):2253-2265.")),

@@ -1,9 +1,23 @@
-# PriorR v4.0
+# PriorR v4.1
 
 PriorR is a prioritization program of disease-linked genetic variants developed within the Genetics & Genomics
 Department of La Fundación Jiménez Díaz University Hospital. It analyses the output of the FJD pipeline of SNVs and
 CNVs: filtering by gene panels, population frequencies, pathogenicity predictors, inheritance patterns,
 phenotypes (HPO), regions and variants already found by another test of the same patient.
+
+## What's new in 4.1
+
+- **Projects**: groups of variant files (one per sample, or files with several samples) indexed in the
+  background; each variant says in how many other samples of the project it is (and homozygous), with a
+  filter by that number and the list of samples in the variant information.
+- **Gene structure**: exons and introns of the transcript with the variant at scale, and its exon / intron
+  and distance to the borders (exons from the UCSC Genome Browser, kept in the shared folder).
+- **Table**: links to the variants that pass the filters and to those filtered out; *Var. in gene* (variants
+  of the gene that pass); any column can be hidden and moved by dragging its header; sorting by a column keeps
+  the previous order within ties and empty allele frequencies sort as 0; the filters of the columns, the
+  search and the order are kept when the table changes.
+- The patient (samples of the file) in the header; rows of the file and of the load filters above the table.
+- PriorR always opens at `http://127.0.0.1:8484` (so *Remember me* works).
 
 ## What's new in 4.0
 
@@ -31,8 +45,8 @@ phenotypes (HPO), regions and variants already found by another test of the same
 
 ## Installation (shared folder, each user runs it on their computer)
 
-**With the installers** (GitHub *Releases*, or *Actions > installers*): `PriorR-4.0-setup.exe` (Windows) and
-`PriorR-4.0.pkg` (macOS) are wizards that install PriorR for the user (no administrator needed), add a
+**With the installers** (GitHub *Releases*, or *Actions > installers*): `PriorR-4.1-setup.exe` (Windows) and
+`PriorR-4.1.pkg` (macOS) are wizards that install PriorR for the user (no administrator needed), add a
 PriorR icon and, on Windows, ask for the shared folder of the lab. R must be installed (https://cran.r-project.org):
 the installers say so when it is missing. They are not signed: Windows shows "Windows protected your PC"
 (*More info > Run anyway*) and macOS needs right click > *Open* the first time. Built by
@@ -66,13 +80,13 @@ The WGS cache is kept in the local disk of each computer (`PRIORR_CACHE_DIR`).
 PriorR can also run as a server for everybody (one computer, users connect with the browser) with Docker:
 
 ```bash
-docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data tblabfjd/priorr:4.0
+docker run -d --name priorr -p 8888:8888 -v priorr:/var/priorr -v /path/to/variant/files:/data tblabfjd/priorr:4.1
 ```
 
 Then open `http://<server>:8888` (serve it behind HTTPS). `/var/priorr` keeps the users, comments, profiles,
 sessions and the cache; `/data` is what "Open file" shows. Optional, once: AlphaMissense
 (`docker exec priorr Rscript Program_files/scripts/get_alphamissense.R`). The image (Docker Hub
-`tblabfjd/priorr`, tags `4.0` and `latest`; PriorR 3 is the tag `3.0`) is built by `.github/workflows/docker.yml`
+`tblabfjd/priorr`, tags `4.1`, `4.0` and `latest`) is built by `.github/workflows/docker.yml`
 for each release tag; to build it yourself: `docker build -t priorr .`
 
 ## Using it

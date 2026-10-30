@@ -6,7 +6,7 @@ ui <- function(request) {
     title = priorr_name,
 
     header = shinydashboardPlus::dashboardHeader(
-      title = tags$img(src = "logo_header_v4.png", height = "40px", alt = priorr_name),
+      title = span(class = "pr-logo", tags$img(src = "logo_header.png", alt = "PriorR"), span(class = "pr-version", paste0("v", priorr_version))),
       titleWidth = 280,
       leftUi = tagList(
         tags$li(class = "dropdown",
@@ -52,7 +52,9 @@ ui <- function(request) {
           .pr-patient b { font-size: 18px; margin-left: 4px; letter-spacing: 0.3px; }
           .pr-patient .fa { margin-right: 6px; }
           .pr-patient-others { color: #607d8b; font-size: 13px; margin-left: 8px; }
-          .main-header .logo img { display: block; height: 40px; margin: 5px auto; }"))),
+          .main-header .logo .pr-logo { display: flex; align-items: flex-end; justify-content: center; height: 50px; padding-bottom: 7px; gap: 6px; }
+          .main-header .logo .pr-logo img { height: 38px; }
+          .main-header .logo .pr-version { color: #fff; font-size: 14px; font-weight: 700; line-height: 1; }"))),
       tabsetPanel(
         id = "navbar",
         tabPanel("SNV", value = "snv", snv_main_ui("snv")),

@@ -19,7 +19,7 @@ auth_server <- function(id) {
         title = if (first_run) paste("Welcome to", priorr_name) else "Sign in",
         easyClose = FALSE, footer = NULL, size = "s",
         div(style = "text-align: center; margin-bottom: 15px;",
-            tags$img(src = "logo_v4.png", style = "width: 220px;"),
+            tags$img(src = "logo.png", style = "width: 200px;"),
             div(class = "text-muted", paste("Version", priorr_version))),
         if (first_run) div(class = "alert alert-info", style = "font-size: 13px;",
           p("This is the first time PriorR is opened with this shared folder."),

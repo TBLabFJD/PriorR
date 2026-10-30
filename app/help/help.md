@@ -1,4 +1,4 @@
-# PriorR v4.0 help
+# PriorR v4.1 help
 
 PriorR is developed by the [Bioinformatics Unit - Genetics and Genomics Department, IIS-Fundación
 Jiménez Díaz](https://www.translationalbioinformaticslab.es/). Code: [github.com/TBLabFJD/PriorR](https://github.com/TBLabFJD/PriorR).
@@ -17,12 +17,13 @@ regions, and variants already found by another test of the same patient.
 [Users and groups](#users) · [CNVs](#cnv) · [Files the lab can adapt](#files) ·
 [Troubleshooting](#troubleshooting) · [Citations](#citations)
 
-The complete user guide with screenshots is in the **PriorR 4.0 user guide (PDF)** (link in the box on the right).
+The complete user guide with screenshots is in the **PriorR 4.1 user guide (PDF)** (link in the box on the right).
 
 <h2 id="how-it-works">How it works</h2>
 
 - **Everybody runs PriorR on their own computer.** It opens in the browser, but it is not a web
-  site: the program runs on the computer itself.
+  site: the program runs on the computer itself, always at `http://127.0.0.1:8484` (the next port,
+  8485..., when that one is in use, e.g. by another PriorR open).
 - **The variant files (genomes, exomes, panels) and the BAM / CRAM files stay where they are**,
   usually on each person's computer. PriorR reads them from there, without copying or uploading them.
 - **The lab shares a folder** (for example on the network drive) where PriorR keeps what is
@@ -31,7 +32,7 @@ The complete user guide with screenshots is in the **PriorR 4.0 user guide (PDF)
 
 <h2 id="installation">Installation</h2>
 
-**With the installers** (`PriorR-4.0-setup.exe` for Windows, `PriorR-4.0.pkg` for macOS): wizards that
+**With the installers** (`PriorR-4.1-setup.exe` for Windows, `PriorR-4.1.pkg` for macOS): wizards that
 install PriorR for the user (no administrator needed) and add a PriorR icon; the Windows one also asks
 for the shared folder of the lab. R must be installed first: the installers say so when it is missing.
 They are not signed: Windows shows "Windows protected your PC" (*More info > Run anyway*) and macOS needs
@@ -227,6 +228,9 @@ close to 1 when the GLOWgenes predictions of the gene concentrate in few disease
 close to 0 when the gene is predicted for many diseases (e.g. highly connected genes).
 
 <h2 id="filters">Sidebar filters</h2>
+
+The header of the page shows the **patient** of the loaded file (the proband, or the first sample;
+"+ P002, P003" for the other samples of the file; the file name on hover).
 
 They apply to the loaded variants and can be changed at any time. Hiding columns doesn't change
 the result; any column can be hidden in *Columns*, and dragging a header of the table moves the
