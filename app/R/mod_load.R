@@ -3,7 +3,7 @@
 # load filters of the chosen profile keep only the candidates (none by default), and the big
 # files are cached so that loading them again takes seconds.
 # Returns list(loaded = reactive list(df, profile), settings = reactive load filters,
-#              refresh_profiles = function()).
+#              refresh_profiles = function(), open_path = function(file): the dialog with that file).
 
 load_button_ui <- function(id) {
   shinyWidgets::actionBttn(NS(id, "open"), "Open variant file", icon = icon("folder-open"),
@@ -77,7 +77,18 @@ load_server <- function(id, user, current_view = function() list()) {
     restoring <- reactiveVal(FALSE)
 
     observeEvent(input$open, toggle_modal(ns("dialog")))
-    path <- open_file_server("file", input, output)
+    # the file chosen in the dialog, or given by another part of PriorR (a sample of a project)
+    picked <- open_file_server("file", input, output)
+    preset <- reactiveVal(NULL)
+    observeEvent(picked(), preset(NULL))
+    path <- reactive(preset() %||% picked())
+    output$file_path <- renderText(if (is.null(path())) "" else basename(path()))
+    open_path <- function(file) {
+      preset(file)
+      toggle_modal(ns("dialog"), show = TRUE)
+    }
+    onBookmark(function(state) state$values$preset <- preset())
+    onRestore(function(state) if (!is.null(state$values$preset)) preset(state$values$preset))
 
     # ---- Profiles ----
     refresh_profiles <- function(selected = isolate(input$profile)) {
@@ -248,6 +259,7 @@ load_server <- function(id, user, current_view = function() list()) {
 
     setBookmarkExclude(c("save_profile", "profile_name", "profile_file", "delete_profile"))
 
-    list(loaded = loaded, settings = settings, refresh_profiles = refresh_profiles, profile_saved = profile_saved)
+    list(loaded = loaded, settings = settings, refresh_profiles = refresh_profiles, profile_saved = profile_saved,
+         open_path = open_path)
   })
 }

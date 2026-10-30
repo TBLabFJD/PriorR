@@ -1,17 +1,21 @@
 # Projects in the SNV tab (projects.R): choose the project of the loaded sample, manage the
 # projects (files, background index) and count each variant in the other samples of the project.
-# Runs inside snv_server. Returns a reactive with list(id, name, counts, total, exclude) or NULL.
+# Runs inside snv_server; open_path(file) opens the load dialog with a file. Returns a reactive with
+# list(id, name, counts, total, exclude) or NULL.
 
 snv_project_sidebar_ui <- function(ns) {
   shinydashboard::menuItem("Project (other samples)", icon = icon("users-viewfinder"),
     selectInput(ns("project"), "Project", choices = c("(none)" = "", project_choices())),
+    conditionalPanel("input.project != ''", ns = ns,
+      selectInput(ns("project_sample"), "Open a sample of the project", choices = NULL),
+      actionButton(ns("open_project_sample"), "Open", icon = icon("folder-open"), style = "margin: 0 15px 6px 15px;")),
     uiOutput(ns("project_info")),
     numericInput(ns("max_project"), "Hide variants in more than this number of other samples of the project", value = NA, min = 0, step = 1),
     actionLink(ns("manage_projects"), "Manage projects (files, index)", icon = icon("folder-tree"),
                style = "margin: 6px 15px; display: block;"))
 }
 
-snv_project_server <- function(input, output, session, user, data, loaded) {
+snv_project_server <- function(input, output, session, user, data, loaded, open_path = function(file) NULL) {
   ns <- session$ns
   changed <- reactiveVal(0)   # projects or files added / removed
   refresh_choices <- function(selected = isolate(input$project)) {
@@ -33,6 +37,22 @@ snv_project_server <- function(input, output, session, user, data, loaded) {
     s <- project_state()
     sig <- paste(s$status$path[s$status$indexed], collapse = "|")
     if (!identical(sig, isolate(indexed_files()))) indexed_files(sig)
+  })
+
+  # The samples of the project, to open one of them (the load dialog, with the file chosen)
+  observe({
+    s <- project_state()
+    st <- s$status[s$status$exists, , drop = FALSE]
+    labels <- ifelse(nzchar(st$samples), paste0(st$samples, " (", basename(st$path), ")"), basename(st$path))
+    current <- if (!is.null(loaded()$file)) normal_path(loaded()$file)
+    updateSelectInput(session, "project_sample", choices = stats::setNames(st$path, labels),
+                      selected = if (isTRUE(isolate(input$project_sample) %in% st$path)) isolate(input$project_sample)
+                                 else if (isTRUE(current %in% st$path)) current)
+  })
+  observeEvent(input$open_project_sample, {
+    req(nzchar(input$project_sample %||% ""))
+    if (!file.exists(input$project_sample)) return(showNotification("The file of this sample is not found.", type = "error"))
+    open_path(input$project_sample)
   })
 
   # samples not counted: those of the loaded file (all of them in a trio file), and the samples

@@ -465,6 +465,9 @@ analysed, each variant says in how many **other** samples of the project it is:
   before), in `shared/projects` for the whole lab. A file that changes is read again with *Index the
   new files*. Only who created a project or an administrator can delete it (the variant files are
   never touched).
+- **Open a sample of the project:** choose the project and a sample in the list and click *Open*: the
+  dialog of *Open variant file* opens with its file chosen (choose the profile and *Load*), so each
+  sample of the project is analysed in turn.
 - **Project:** choose the project of the loaded sample. The table gets **In project** (number of
   other samples with the variant) and **Hom in project** (of them, homozygous), next to GENE. The
   samples of the loaded file are not counted (all of them in a trio file).

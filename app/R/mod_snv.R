@@ -372,7 +372,7 @@ snv_server <- function(id, user) {
     hidden_keys <- snv_rounds_server(input, output, session, user, data, function() params(), loader$loaded)
 
     # ---- Project: counts in the other samples (snv_project.R) ----
-    project <- snv_project_server(input, output, session, user, data, loader$loaded)
+    project <- snv_project_server(input, output, session, user, data, loader$loaded, loader$open_path)
 
     # ---- PanelApp of the user (snv_panelapp.R) ----
     snv_panelapp_server(input, output, session, user)
